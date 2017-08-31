@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.jackson.andrew.colorcarvesapp.EnableOptionsSettingScreen">
+
+    <CheckBox
+        android:id="@+id/KeepOffsetSetting"
+        android:layout_width="285dp"
+        android:layout_height="40dp"
+        android:text="Keep Offset Setting"
+        android:checked="true"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/OffSetInfluenced"
+        android:layout_marginTop="47dp"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="39dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+        android:id="@+id/KeepBrightnessSetting"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:text="Keep Brightness Setting"
+        android:checked="true"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/OffSetInfluenced"
+        android:layout_marginTop="26dp"
+        app:layout_constraintTop_toBottomOf="@+id/OffSetInfluenced"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/OffSetInfluenced" />
+
+    <CheckBox
+        android:id="@+id/BrightnessInfluenced"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:text="Brightness Influence"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/KeepBrightnessSetting"
+        app:layout_constraintTop_toBottomOf="@+id/KeepBrightnessSetting"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/KeepBrightnessSetting" />
+
+    <CheckBox
+        android:id="@+id/PatternInfluenced"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:text="Pattern Influence"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/KeepPatternSetting"
+        app:layout_constraintTop_toBottomOf="@+id/KeepPatternSetting"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/KeepPatternSetting" />
+
+    <CheckBox
+        android:id="@+id/KeepPatternSetting"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:text="Keep Pattern Setting"
+        android:checked="true"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/BrightnessInfluenced"
+        android:layout_marginTop="23dp"
+        app:layout_constraintTop_toBottomOf="@+id/BrightnessInfluenced"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/BrightnessInfluenced" />
+
+    <CheckBox
+        android:id="@+id/OffSetInfluenced"
+        android:layout_width="285dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="86dp"
+        android:text="Offset Influence"
+        app:layout_constraintLeft_toLeftOf="@+id/KeepOffsetSetting"
+        app:layout_constraintRight_toRightOf="@+id/KeepOffsetSetting"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1" />
+
+    <Button
+        android:id="@+id/EnableOptionsConfirm"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:text="Confirm"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/EnableOptionsCancel"
+        app:layout_constraintRight_toRightOf="@+id/EnableOptionsCancel"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/EnableOptionsCancel"
+        app:layout_constraintHorizontal_bias="1.0"
+        android:layout_marginBottom="-326dp" />
+
+    <Button
+        android:id="@+id/EnableOptionsCancel"
+        android:layout_width="178dp"
+        android:layout_height="48dp"
+        android:text="Cancel"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">ColorCarvesApp</string>
+    <string name="title_activity_led_screen">LedScreen</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_speed_screen">SpeedScreen</string>
+    <string name="title_activity_angle_screen">AngleScreen</string>
+    <string name="title_activity_base_setting_screen">BaseSettingScreen</string>
+    <string name="title_activity_board_specs_screen">BoardSpecsScreen</string>
+    <string name="title_activity_enable_setting_screen">EnableSettingScreen</string>
+    <string name="title_activity_angel_setting_screen">AngelSettingScreen</string>
+    <string name="title_activity_speed_setting_screen">SpeedSettingScreen</string>
+</resources>
