@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     public Button ToMainMenu;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,24 +39,25 @@ public class MainActivity extends AppCompatActivity {
 
         ToMainMenu = (Button) findViewById(R.id.ScanButton);
 
-    ToMainMenu.setOnClickListener(new View.OnClickListener() {
-        public void onClick(View v) {
-
-            GoToMainMenu();
-        }
-    });
 
 
 
+        ToMainMenu.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
 
+                StartBluetoothScan();
+            }
+        });
     }
 
 
 
-public void GoToMainMenu() {
 
 
-    Intent myIntent = new Intent(MainActivity.this, MainMenu.class);
+public void StartBluetoothScan() {
+
+
+    Intent myIntent = new Intent(MainActivity.this, BluetoothScanActivity.class);
 
     MainActivity.this.startActivity(myIntent);
 
