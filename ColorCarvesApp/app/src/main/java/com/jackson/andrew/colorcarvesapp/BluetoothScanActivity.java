@@ -58,7 +58,7 @@ public class BluetoothScanActivity extends ListActivity {
     private static final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
 
 
     @Override

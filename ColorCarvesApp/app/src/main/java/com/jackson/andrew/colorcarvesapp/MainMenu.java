@@ -2,10 +2,20 @@ package com.jackson.andrew.colorcarvesapp;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.nfc.Tag;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +25,27 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
-public class MainMenu extends AppCompatActivity {
+public class MainMenu extends AppCompatActivity{
+
+
+    private BlueToothLowEnergyService mBluetoothLeService;
+
+    private boolean mConnected = false;
+    private BluetoothGattCharacteristic characteristicTX;
+    private BluetoothGattCharacteristic characteristicRX;
+
+
+    private String mDeviceName;
+    private String mDeviceAddress;
+
+    private BlueLowEnergyAdapter mLeDeviceListAdapter;
+    private BluetoothAdapter mBluetoothAdapter;
+    private boolean mScanning;
+    private Handler mHandler;
 
     public Button ToLEDScreen;
     public Button ToAngleScreen;
@@ -24,14 +53,76 @@ public class MainMenu extends AppCompatActivity {
     public Button ToBoardSpecs;
     public Button ToBaseSetting;
     public Button ToEnableOptions;
-
-    private BlueLowEnergyAdapter mLeDeviceListAdapter;
-    private BluetoothAdapter mBluetoothAdapter;
-    private boolean mScanning;
-    private Handler mHandler;
+    public TextView DeviceAdressDisplay;
 
     public static final String DEVICE_NAME = "DEVICE_NAME";
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
+
+
+        public final static UUID HM_RX_TX =
+                UUID.fromString(SampleGattAttributes.HM_RX_TX);
+
+        private final String LIST_NAME = "NAME";
+        private final String LIST_UUID = "UUID";
+
+        // Code to manage Service lifecycle.
+        private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder service) {
+                mBluetoothLeService = ((BlueToothLowEnergyService.LocalBinder) service).getService();
+                if (!mBluetoothLeService.initialize()) {
+                   Log.d("error on service","Unable to connect to bluetooth");
+                    finish();
+                }
+                // Automatically connects to the device upon successful start-up initialization.
+                mBluetoothLeService.connect(mDeviceAddress);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                mBluetoothLeService = null;
+            }
+        };
+
+        // Handles various events fired by the Service.
+        // ACTION_GATT_CONNECTED: connected to a GATT server.
+        // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+        // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+        // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+        //                        or notification operations.
+        private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                if (BlueToothLowEnergyService.ACTION_GATT_CONNECTED.equals(action)) {
+                    mConnected = true;
+
+                    invalidateOptionsMenu();
+                } else if (BlueToothLowEnergyService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                    mConnected = false;
+
+                    invalidateOptionsMenu();
+                    clearUI();
+                } else if (BlueToothLowEnergyService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                    // Show all the supported services and characteristics on the user interface.
+                    displayGattServices(mBluetoothLeService.getSupportedGattServices());
+
+
+                } else if (BlueToothLowEnergyService.ACTION_DATA_AVAILABLE.equals(action)) {
+                    displayData(intent.getStringExtra(mBluetoothLeService.EXTRA_DATA));
+                }
+
+            }
+        };
+
+
+            private void clearUI() {
+                // mDataField.setText(R.string.no_data);
+            }
+
+
+
 
 
 
@@ -40,9 +131,11 @@ public class MainMenu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
-
-
+        final Intent intent = getIntent();
+        mDeviceName = intent.getStringExtra(DEVICE_NAME);
+        mDeviceAddress = intent.getStringExtra(DEVICE_ADDRESS);
+        Intent gattServiceIntent = new Intent(this, BluetoothScanActivity.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         ToAngleScreen = (Button) findViewById(R.id.ToAngleScreen);
         ToSpeedScreen = (Button) findViewById(R.id.ToSpeedScreen);
@@ -50,6 +143,7 @@ public class MainMenu extends AppCompatActivity {
         ToBaseSetting = (Button) findViewById(R.id.ToBaseSettingScreen);
         ToBoardSpecs = (Button) findViewById(R.id.ToBoardSpecs);
         ToEnableOptions = (Button) findViewById(R.id.ToEnableOptions);
+        DeviceAdressDisplay=(TextView)findViewById(R.id.DeviceAddressDisplay);
 
 
 
@@ -100,19 +194,28 @@ public class MainMenu extends AppCompatActivity {
     }
 
 
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
-        if (device == null) return;
-        final Intent intent = new Intent(this, MainMenu.class);
-        intent.putExtra(MainMenu.DEVICE_NAME, device.getName());
-        intent.putExtra(MainMenu.DEVICE_ADDRESS, device.getAddress());
-        if (mScanning) {
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            mScanning = false;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.d("Connection", "Connect request result=" + result);
         }
-        startActivity(intent);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+    }
 
 
 
@@ -231,6 +334,53 @@ public class MainMenu extends AppCompatActivity {
         }
     }
 
+
+
+    // Demonstrates how to iterate through the supported GATT Services/Characteristics.
+    // In this sample, we populate the data structure that is bound to the ExpandableListView
+    // on the UI.
+    private void displayGattServices(List<BluetoothGattService> gattServices) {
+        if (gattServices == null) return;
+        String uuid = null;
+        String unknownServiceString =("Unknown Device");
+        ArrayList<HashMap<String, String>> gattServiceData = new ArrayList<HashMap<String, String>>();
+
+
+        // Loops through available GATT Services.
+        for (BluetoothGattService gattService : gattServices) {
+            HashMap<String, String> currentServiceData = new HashMap<String, String>();
+            uuid = gattService.getUuid().toString();
+            currentServiceData.put(
+                    LIST_NAME, SampleGattAttributes.lookup(uuid, unknownServiceString));
+
+            // If the service exists for HM 10 Serial, say so.
+
+            currentServiceData.put(LIST_UUID, uuid);
+            gattServiceData.add(currentServiceData);
+
+            // get characteristic when UUID matches RX/TX UUID
+            characteristicTX = gattService.getCharacteristic(BlueToothLowEnergyService.UUID_HM_RX_TX);
+            characteristicRX = gattService.getCharacteristic(BlueToothLowEnergyService.UUID_HM_RX_TX);
+        }
+
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BlueToothLowEnergyService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BlueToothLowEnergyService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BlueToothLowEnergyService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BlueToothLowEnergyService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
+    private void displayData(String data) {
+
+        if (data != null) {
+            DeviceAdressDisplay.setText(data);
+        }
+    }
+
     // Device scan callback.
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
@@ -250,6 +400,18 @@ public class MainMenu extends AppCompatActivity {
     static class ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
+    }
+
+
+    public void SendMessage(byte[] UserMessage){
+
+        if (mConnected) {
+            characteristicTX.setValue(UserMessage);
+            mBluetoothLeService.writeCharacteristic(characteristicTX);
+            mBluetoothLeService.setCharacteristicNotification(characteristicRX, true);
+
+
+        }
     }
 
 
