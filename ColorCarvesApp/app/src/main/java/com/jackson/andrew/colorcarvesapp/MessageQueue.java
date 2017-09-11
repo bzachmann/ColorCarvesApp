@@ -13,6 +13,8 @@ public class MessageQueue {
     private BlockingQueue<Message> MyMessageQueue;
 
 
+
+
     public boolean isEmpty()
     // Post: Returns true if the queue is empty. Otherwise, false.
     {
@@ -45,7 +47,14 @@ public class MessageQueue {
 
     }
 
+    public BlockingQueue<Message> getMyMessageQueue() {
+        return MyMessageQueue;
+    }
 
+
+    public void setMyMessageQueue(BlockingQueue<Message> myMessageQueue) {
+        MyMessageQueue = myMessageQueue;
+    }
 }
 
 

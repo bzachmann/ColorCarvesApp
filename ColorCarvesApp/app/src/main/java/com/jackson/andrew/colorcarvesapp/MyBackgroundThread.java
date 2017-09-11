@@ -2,6 +2,7 @@ package com.jackson.andrew.colorcarvesapp;
 
 import java.nio.ByteBuffer;
 import java.security.Timestamp;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by User on 9/8/2017.
@@ -11,8 +12,8 @@ public class MyBackgroundThread extends Thread {
 
     private static final String MY_BACKGROUND_THREAD = "my background thread";
     private static final String TAG = MyBackgroundThread.class.getSimpleName();
-    private MessageQueue ThreadQueue;
-    private MessageQueue SendingQueue;
+    private BlockingQueue<Message> SendingQueue;
+    private Message UserMessage;
     private byte [] ByteMessage;
     private CMPPort ThreadPort;
     private MainMenu ThreadSend;
@@ -20,9 +21,11 @@ public class MyBackgroundThread extends Thread {
     private long PastTime = System.currentTimeMillis()%1000;
 
 
-    public MyBackgroundThread(MessageQueue queue) {
+    public MyBackgroundThread() {
         super(MY_BACKGROUND_THREAD);
-        ThreadQueue = queue;
+        ThreadPort = new CMPPort();
+        ThreadSend = new MainMenu();
+        ByteMessage = new byte[5];
 
 
     }
@@ -30,9 +33,9 @@ public class MyBackgroundThread extends Thread {
     @Override
     public void run() {
         super.run();
-        ThreadPort = new CMPPort();
-        ThreadSend = new MainMenu();
-        ByteMessage = new byte[5];
+
+        SendingQueue = ThreadPort.getCMPQueue();
+
 
 
         while (true) {
@@ -41,12 +44,15 @@ public class MyBackgroundThread extends Thread {
 
                     // Time has passsed so BLE can except a new message
             }
+                if(!SendingQueue.isEmpty()) {
 
-            SendingQueue = ThreadPort.PackMesage(ThreadQueue);   //Packs message sent from UI
 
-            while (!SendingQueue.isEmpty()) {  //IF message us waiting on queue it should be sent
+                    UserMessage = ThreadPort.SendViaThread();
+                }
 
-                Message UserMessage = SendingQueue.dequeue();  //First message on queue
+            while (UserMessage!=null){  //IF message us waiting on queue it should be sent
+
+
                 ByteMessage = GetBytesOfMessage(UserMessage);  //Sending message needs to happen with bytes
 
                 ThreadSend.SendMessage(ByteMessage);  //Sending bytes via BLE

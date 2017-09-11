@@ -54,6 +54,7 @@ public class MainMenu extends AppCompatActivity{
     public Button ToBaseSetting;
     public Button ToEnableOptions;
     public TextView DeviceAdressDisplay;
+    public MessageQueue AppMessageQueue;
 
     public static final String DEVICE_NAME = "DEVICE_NAME";
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -144,6 +145,7 @@ public class MainMenu extends AppCompatActivity{
         ToBoardSpecs = (Button) findViewById(R.id.ToBoardSpecs);
         ToEnableOptions = (Button) findViewById(R.id.ToEnableOptions);
         DeviceAdressDisplay=(TextView)findViewById(R.id.DeviceAddressDisplay);
+
 
 
 

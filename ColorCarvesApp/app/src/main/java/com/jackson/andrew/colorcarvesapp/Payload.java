@@ -12,12 +12,14 @@ public class Payload {
 
 
 
+
     public void SetPayload(Data PayloadData, ID PayloadID){
+        bb = ByteBuffer.allocate(20);
 
 
         Payload = new byte[4];
         Payload[0] = PayloadID.getIdByte();
-       bb.put(PayloadData.GetData());
+        bb.put(PayloadData.GetData());
         Payload[3] = bb.get();
         Payload[2] = bb.get();
         Payload[1] = bb.get();

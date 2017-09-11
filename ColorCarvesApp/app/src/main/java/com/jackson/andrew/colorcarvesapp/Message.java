@@ -13,6 +13,8 @@ public class Message {
 
 
     public void SetMessagePayload(Payload payload) {
+
+        mybb =  ByteBuffer.allocate(20);
         Message = new byte[5];
         Message[0] = (byte) (0xE1); //Header Byte
         mybb.put(payload.GetPayload());

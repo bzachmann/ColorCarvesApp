@@ -1,13 +1,16 @@
 package com.jackson.andrew.colorcarvesapp;
 
 import android.content.Intent;
+import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BaseSettingScreen extends AppCompatActivity {
 
@@ -19,6 +22,16 @@ public class BaseSettingScreen extends AppCompatActivity {
     public SeekBar OffsetSeekbar;
     public TextView BrightnessDisplay;
     public TextView OffsetDisplay;
+    public Message MessageToSend;
+    public ID IdOFMessage;
+    public Data DataOfMessage;
+    public Payload PayloadOfMessage;
+    public byte UnifBright1 = (byte)0xFC;
+    public byte UnifBright2 = (byte) 0x0F;
+    public MainMenu mm;
+    public CMPPort MessagePort;
+    private MyBackgroundThread mMyBackgroundThread;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +46,17 @@ public class BaseSettingScreen extends AppCompatActivity {
         OffsetSeekbar = (SeekBar) findViewById(R.id.OffsetSeekbar);
         BrightnessDisplay = (TextView) findViewById(R.id.BrightnessDisplay);
         OffsetDisplay= (TextView) findViewById(R.id.OffsetDisplay);
+        IdOFMessage = new ID();
+        DataOfMessage = new Data();
+        PayloadOfMessage = new Payload();
+        MessagePort = new CMPPort();
+        MessageToSend = new Message();
+        if (mMyBackgroundThread == null) { // only start one thread at a time  //Not sure where to start the thread
+            startBackgroundThread();
+            Log.d("Thread","Creating Background thread");
+        }
+
+
 
 
         BrightnessSeekbar.setEnabled(false); // Seekbar is not available unless checkbox is unchecked
@@ -41,8 +65,25 @@ public class BaseSettingScreen extends AppCompatActivity {
         CheckBrightnessSeekbar(BrightnessSeekbar);
         CheckOffsetSeekbar(OffsetSeekbar);
 
+
         BaseSettingConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                if(KeepBrightness.isChecked()){
+                   IdOFMessage.setIdByte((byte)0x14);
+                    DataOfMessage.SetData(2,(byte)(0x00&(UnifBright1)));
+                    DataOfMessage.SetData(3,(byte)(0x00));
+                }
+                if(KeepOffset.isChecked()){
+                    DataOfMessage.SetData(1,(byte)(0x01)); //Will change keep for testing purposes
+                }
+                PayloadOfMessage.SetPayload(DataOfMessage,IdOFMessage);
+                MessageToSend.SetMessagePayload(PayloadOfMessage);
+
+                MessagePort.PackMesage(MessageToSend);
+
+
+
 
                 ReturnToMainMenu();
             }
@@ -165,6 +206,21 @@ public class BaseSettingScreen extends AppCompatActivity {
         }
         else{
             OffsetSeekbar.setEnabled(true);
+        }
+    }
+
+    private void startBackgroundThread() {
+        mMyBackgroundThread = new MyBackgroundThread(); // Pass the Queue to the thread
+        mMyBackgroundThread.start();
+        Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
+
+    }
+
+    private void stopBackgroundThread() {
+        if (mMyBackgroundThread != null) {
+            mMyBackgroundThread = null; // thread is now dead, we need to free from memory
+            Toast.makeText(this, "stopping...", Toast.LENGTH_SHORT).show();
+
         }
     }
 }

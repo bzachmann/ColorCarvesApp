@@ -80,6 +80,8 @@ public class BluetoothScanActivity extends ListActivity {
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
 
+
+
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, " Error BLE not supported", Toast.LENGTH_SHORT).show();
             finish();
@@ -140,6 +142,7 @@ public class BluetoothScanActivity extends ListActivity {
         if (mScanning) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
             mScanning = false;
+
         }
         startActivity(intent);
     }
@@ -272,6 +275,8 @@ public class BluetoothScanActivity extends ListActivity {
         TextView deviceName;
         TextView deviceAddress;
     }
+
+
 
 
 }

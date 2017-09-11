@@ -1,6 +1,8 @@
 package com.jackson.andrew.colorcarvesapp;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by User on 9/8/2017.
@@ -9,7 +11,9 @@ import java.nio.ByteBuffer;
 public class CMPPort {
 
 
-    MessageQueue CMPQueue;
+   public BlockingQueue<Message> CMPQueue = new ArrayBlockingQueue<Message>(66);
+
+
 
 
 
@@ -28,20 +32,31 @@ public class CMPPort {
         return TimePassed;
     }
 
-    public MessageQueue PackMesage(MessageQueue Queue){
+    public void PackMesage(Message SendMessage){
 
-        while(!Queue.isEmpty() && CMPQueue.QueueSize() != 4){  //Still messages in queue or on buffer
 
-            Message Tosend;
-            Tosend = Queue.dequeue();
-
-            CMPQueue.enqueue(Tosend);
+            CMPQueue.add(SendMessage);
 
             }
-            return CMPQueue;
+
+
+
+
+        public Message SendViaThread(){
+                int x = 0;
+           if(!CMPQueue.isEmpty() && ( x  < 4)){    //Send up to 4 messages if available
+               Message MessageReadyToBeSent;
+               MessageReadyToBeSent = CMPQueue.remove();
+               x++;
+               return MessageReadyToBeSent;
+           }
+           return null;
         }
 
+    public BlockingQueue<Message> getCMPQueue() {
+        return CMPQueue;
     }
+}
 
 
 
