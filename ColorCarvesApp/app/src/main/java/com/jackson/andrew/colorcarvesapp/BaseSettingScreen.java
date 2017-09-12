@@ -1,7 +1,6 @@
 package com.jackson.andrew.colorcarvesapp;
 
 import android.content.Intent;
-import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,23 +13,25 @@ import android.widget.Toast;
 
 public class BaseSettingScreen extends AppCompatActivity {
 
-    public Button BaseSettingConfirm;
-    public Button BaseSettingCancel;
-    public CheckBox KeepBrightness;
-    public CheckBox KeepOffset;
-    public SeekBar BrightnessSeekbar;
-    public SeekBar OffsetSeekbar;
-    public TextView BrightnessDisplay;
-    public TextView OffsetDisplay;
-    public Message MessageToSend;
-    public ID IdOFMessage;
-    public Data DataOfMessage;
-    public Payload PayloadOfMessage;
-    public byte UnifBright1 = (byte)0xFC;
-    public byte UnifBright2 = (byte) 0x0F;
-    public MainMenu mm;
-    public CMPPort MessagePort;
-    private MyBackgroundThread mMyBackgroundThread;
+    private Button BaseSettingConfirm;
+    private Button BaseSettingCancel;
+    private CheckBox KeepBrightness;
+    private CheckBox KeepOffset;
+    private SeekBar BrightnessSeekbar;
+    private SeekBar OffsetSeekbar;
+    private TextView BrightnessDisplay;
+    private TextView OffsetDisplay;
+    private Payload PayloadOfMessage;
+    private CMPPort porttx;
+    private byte UnifBright1 = (byte)0xFC; //Set to top 6 bits of data1
+    private byte UnifBright2 = (byte)0x0F; //Set to bottom 4 bits of data2
+    private byte id = (byte)0x14; //Set to ID of basesetting
+    private byte UnifOffset0 = (byte)(0xFF); //data0
+    private byte UnifOffset1 = (byte)(0x03); //Set to bottom 2 bits of data1
+    private byte[] ByteKeepCurrentBrightness;
+    private byte [] ByteKeepCurrentOffset;
+
+
 
 
     @Override
@@ -46,16 +47,8 @@ public class BaseSettingScreen extends AppCompatActivity {
         OffsetSeekbar = (SeekBar) findViewById(R.id.OffsetSeekbar);
         BrightnessDisplay = (TextView) findViewById(R.id.BrightnessDisplay);
         OffsetDisplay= (TextView) findViewById(R.id.OffsetDisplay);
-        IdOFMessage = new ID();
-        DataOfMessage = new Data();
         PayloadOfMessage = new Payload();
-        MessagePort = new CMPPort();
-        MessageToSend = new Message();
-        if (mMyBackgroundThread == null) { // only start one thread at a time  //Not sure where to start the thread
-            startBackgroundThread();
-            Log.d("Thread","Creating Background thread");
-        }
-
+        porttx = new CMPPort();
 
 
 
@@ -68,19 +61,44 @@ public class BaseSettingScreen extends AppCompatActivity {
 
         BaseSettingConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                ByteKeepCurrentOffset = new byte[2];
+                ByteKeepCurrentBrightness = new byte[2];
 
-                if(KeepBrightness.isChecked()){
-                   IdOFMessage.setIdByte((byte)0x14);
-                    DataOfMessage.SetData(2,(byte)(0x00&(UnifBright1)));
-                    DataOfMessage.SetData(3,(byte)(0x00));
-                }
-                if(KeepOffset.isChecked()){
-                    DataOfMessage.SetData(1,(byte)(0x01)); //Will change keep for testing purposes
-                }
-                PayloadOfMessage.SetPayload(DataOfMessage,IdOFMessage);
-                MessageToSend.SetMessagePayload(PayloadOfMessage);
 
-                MessagePort.PackMesage(MessageToSend);
+                if(!KeepBrightness.isChecked()) //Brightness has changed
+                {
+                    ByteKeepCurrentBrightness = intToByteArray(BrightnessSeekbar.getProgress()* 765); //from 0 - 100 to 0 - 765
+
+                }
+                if(!KeepOffset.isChecked())
+                {
+                    ByteKeepCurrentOffset = intToByteArray(OffsetSeekbar.getProgress());
+                }
+
+
+
+
+                if(KeepBrightness.isChecked())
+                {
+                    ByteKeepCurrentBrightness[0] = (byte)0xFF;
+                    ByteKeepCurrentBrightness[1] = (byte)0xFF;
+                }
+
+
+
+                if(KeepOffset.isChecked())
+                {
+                    ByteKeepCurrentOffset[0] = (byte)0xFF;
+                    ByteKeepCurrentOffset[1] = (byte)0xFF;
+                }
+
+
+                PayloadOfMessage.id.setId(id);
+                PayloadOfMessage.data.setData(2,(byte)(ByteKeepCurrentBrightness[1] >> 2 & ByteKeepCurrentBrightness[0] <<6  & UnifBright2));  //bits 10 - 7 of Brightness
+                PayloadOfMessage.data.setData(1,(byte)((ByteKeepCurrentBrightness[0] >> 6 & UnifBright1)&((ByteKeepCurrentOffset[1] << 6 & UnifOffset1))));  //bits 6-1 of brightness and bits 10,9 of offset
+                PayloadOfMessage.data.setData(0,(byte)(ByteKeepCurrentOffset[0] & UnifOffset0));
+                porttx.queueToSend(PayloadOfMessage); // Payload to message queue
+
 
 
 
@@ -209,19 +227,17 @@ public class BaseSettingScreen extends AppCompatActivity {
         }
     }
 
-    private void startBackgroundThread() {
-        mMyBackgroundThread = new MyBackgroundThread(); // Pass the Queue to the thread
-        mMyBackgroundThread.start();
-        Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
+    public byte[] intToByteArray(int val)
+    {
+        byte topTwoBits = (byte)0xC0;
+        byte[] tempResult = new byte[2];
 
+        tempResult[1] = (byte)(val >> 22 & topTwoBits ); //Sets the top 2 bits from the value of brightness/offset setting to byte[1]
+        tempResult[0] = (byte)(val >> 24);  //Sets the bottom byte from the value of brightness/offset
+
+        return tempResult;
     }
 
-    private void stopBackgroundThread() {
-        if (mMyBackgroundThread != null) {
-            mMyBackgroundThread = null; // thread is now dead, we need to free from memory
-            Toast.makeText(this, "stopping...", Toast.LENGTH_SHORT).show();
 
-        }
-    }
 }
 

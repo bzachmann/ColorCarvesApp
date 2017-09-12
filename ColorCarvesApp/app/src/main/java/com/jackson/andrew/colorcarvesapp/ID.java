@@ -8,15 +8,18 @@ package com.jackson.andrew.colorcarvesapp;
 
 public class ID {
 
-    public byte IdByte;
+    private byte id = (byte)0xFF;
 
-
-    public void setIdByte(byte idByte) {
-        IdByte = idByte;
+    ID()
+    {
+        this.id = (byte)0xFF;
     }
-    public Byte getIdByte(){
-
-        return IdByte;
-
+    public void setId(byte value)
+    {
+        id = value;
+    }
+    public Byte getId()
+    {
+        return id;
     }
 }

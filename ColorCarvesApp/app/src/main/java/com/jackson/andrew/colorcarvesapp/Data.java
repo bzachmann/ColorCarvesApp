@@ -6,32 +6,34 @@ package com.jackson.andrew.colorcarvesapp;
 
 public class Data {
 
-    public byte[] Data;
+    private byte[] data = new byte[3];
+    private int dataByteLength = 3;
 
-
-    public void SetData(int ByteNumber, byte SetData){
-
-        Data = new byte[3];
-        if(ByteNumber == 0){
-
-            Data[0] = SetData;
-        }
-        if(ByteNumber == 1){
-
-            Data[1] = SetData;
-        }
-        if(ByteNumber==2){
-            Data[2] = SetData;
-        }
-
-
+    public Data()
+    {
+        data[0] = (byte)0xFF;
+        data[1] = (byte)0xFF;
+        data[2] = (byte)0xFF;
     }
 
-    public byte [] GetData(){
-
-        return Data;
+    public boolean setData(int index, byte value)
+    {
+        boolean retVal = false;
+        if((index >= 0) && (index < dataByteLength))
+        {
+            data[index] = value;
+            retVal = true;
+        }
+        return retVal;
     }
 
-
-
+     public byte getByte(int index)
+    {
+        byte retVal = (byte)0xFF;
+        if((index >= 0) && (index < dataByteLength))
+        {
+            retVal = data[index];
+        }
+        return retVal;
+    }
 }

@@ -8,30 +8,23 @@ import java.nio.ByteBuffer;
 
 public class Message {
 
-    public byte[] Message;
-    public ByteBuffer mybb;
+    private byte header = (byte)0xE1;
+    public Payload payload;
 
-
-    public void SetMessagePayload(Payload payload) {
-
-        mybb =  ByteBuffer.allocate(20);
-        Message = new byte[5];
-        Message[0] = (byte) (0xE1); //Header Byte
-        mybb.put(payload.GetPayload());
-        Message[4] = mybb.get();
-        Message[3] = mybb.get();
-        Message[2] = mybb.get();
-        Message[1] = mybb.get();
-
+    Message()
+    {
+        header = (byte)0xE1;
     }
 
-    public byte[] getMessage() {
-        return Message;
+    public void setHeader(byte value)
+    {
+        header = value;
     }
 
-
-
-
+    public byte getHeader()
+    {
+        return header;
+    }
 }
 
 

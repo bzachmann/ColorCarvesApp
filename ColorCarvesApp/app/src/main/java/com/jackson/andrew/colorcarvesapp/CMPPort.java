@@ -11,52 +11,82 @@ import java.util.concurrent.BlockingQueue;
 public class CMPPort {
 
 
-   public BlockingQueue<Message> CMPQueue = new ArrayBlockingQueue<Message>(66);
+    private BlockingQueue<Payload> payloadFifo;
+    private byte[] byteBuffer;
+    private long timeOld;
+    private long sendRateMs = 200;
+    private MainMenu mm;
+    //BLEServices myBLE;
 
+    CMPPort() {
+        timeOld = 0;
+        byteBuffer = new byte[20];
+        payloadFifo = new ArrayBlockingQueue<Payload>(30);
+        mm = new MainMenu();
 
-
-
-
-    public Boolean HasTimePassed(long Current, long Past){
-        boolean TimePassed;
-        if ((Current - Past) > 200){
-             TimePassed= true;
-            Current = System.currentTimeMillis()%1000;
-
-        }
-        else{
-            TimePassed = false;
-            Current = System.currentTimeMillis()%1000;
-
-        }
-        return TimePassed;
     }
 
-    public void PackMesage(Message SendMessage){
 
+    public void init() {
+        payloadFifo.clear();
+        timeOld = System.currentTimeMillis();
+    }
 
-            CMPQueue.add(SendMessage);
+    public void run() {
+        long timeNew = System.currentTimeMillis();
+        if (((timeNew - timeOld) > sendRateMs) && (!payloadFifo.isEmpty())) {
+            //make sure there is mutual exclusion between threads in the blocking queue
+            //semaphore here
 
+            int payloadNumber = 0;
+            while ((payloadNumber >= 0) && (payloadNumber < 4) && (!payloadFifo.isEmpty())) {
+                Payload tempPayload = new Payload();
+                tempPayload = payloadFifo.remove(); //check this
+
+                byteBuffer[(payloadNumber * 5) + 0] = (byte) 0xE1;
+                byteBuffer[(payloadNumber * 5) + 1] = tempPayload.id.getId();
+                byteBuffer[(payloadNumber * 5) + 2] = tempPayload.data.getByte(2);
+                byteBuffer[(payloadNumber * 5) + 3] = tempPayload.data.getByte(1);
+                byteBuffer[(payloadNumber * 5) + 4] = tempPayload.data.getByte(0);
+                payloadNumber++;
             }
 
 
+            mm.sendMessageOverBLE(byteBuffer,(payloadNumber * 5));//send from this buffer, this many bytes
 
-
-        public Message SendViaThread(){
-                int x = 0;
-           if(!CMPQueue.isEmpty() && ( x  < 4)){    //Send up to 4 messages if available
-               Message MessageReadyToBeSent;
-               MessageReadyToBeSent = CMPQueue.remove();
-               x++;
-               return MessageReadyToBeSent;
-           }
-           return null;
+            timeOld = System.currentTimeMillis();
         }
 
-    public BlockingQueue<Message> getCMPQueue() {
-        return CMPQueue;
+    }
+
+    public void queueToSend(Payload payload)
+    {
+        payloadFifo.add(payload);
     }
 }
+
+
+
+
+//    public Boolean HasTimePassed(long Current, long Past){
+//        boolean TimePassed;
+//        if ((Current - Past) > 200){
+//             TimePassed= true;
+//            Current = System.currentTimeMillis()%1000;
+//
+//        }
+//        else{
+//            TimePassed = false;
+//            Current = System.currentTimeMillis()%1000;
+//
+//        }
+//        return TimePassed;
+//    }
+//
+//
+//
+//
+//}
 
 
 

@@ -28,7 +28,9 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
 
-    public Button ToMainMenu;
+    private Button ToMainMenu;
+    private CommThread BackgroundThread;
+
 
 
 
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ToMainMenu = (Button) findViewById(R.id.ScanButton);
+        startBackgroundThread();
 
 
 
@@ -62,6 +65,21 @@ public void StartBluetoothScan() {
     MainActivity.this.startActivity(myIntent);
 
 }
+
+    private void startBackgroundThread() {
+       BackgroundThread = new CommThread(); // Pass the Queue to the thread
+        BackgroundThread.start();
+        Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
+
+    }
+
+    private void stopBackgroundThread() {
+        if (BackgroundThread != null) {
+            BackgroundThread = null; // thread is now dead, we need to free from memory
+            Toast.makeText(this, "stopping...", Toast.LENGTH_SHORT).show();
+
+        }
+    }
 }
 
 

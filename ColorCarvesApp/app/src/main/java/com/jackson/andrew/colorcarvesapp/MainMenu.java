@@ -135,7 +135,7 @@ public class MainMenu extends AppCompatActivity{
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(DEVICE_ADDRESS);
-        Intent gattServiceIntent = new Intent(this, BluetoothScanActivity.class);
+        Intent gattServiceIntent = new Intent(this, BlueToothLowEnergyService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         ToAngleScreen = (Button) findViewById(R.id.ToAngleScreen);
@@ -405,10 +405,19 @@ public class MainMenu extends AppCompatActivity{
     }
 
 
-    public void SendMessage(byte[] UserMessage){
+    public void sendMessageOverBLE(byte[] userMessage, int userMessageSize )  //Sends bytes over bluetoothLE
+    {
 
-        if (mConnected) {
-            characteristicTX.setValue(UserMessage);
+        byte[] temp  = new byte[userMessageSize];
+        for(int x = 0; x<userMessageSize; x++)
+        {
+            temp[x] = userMessage[x];
+
+        }
+
+        if (mConnected)
+        {
+            characteristicTX.setValue(userMessage);
             mBluetoothLeService.writeCharacteristic(characteristicTX);
             mBluetoothLeService.setCharacteristicNotification(characteristicRX, true);
 
