@@ -134,6 +134,7 @@ public class MainMenu extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mm = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         final Intent intent = getIntent();

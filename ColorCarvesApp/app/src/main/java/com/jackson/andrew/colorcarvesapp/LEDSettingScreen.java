@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -90,7 +91,12 @@ public class LEDSettingScreen extends AppCompatActivity{
                 payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
                 payloadOfMessage.data.setData(1, (byte)(indexOfLed>> 2 & ledIndexData1 & (offsetOfLed[1] & ledOffsetData1)));
                 payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                porttx.queueToSend(payloadOfMessage);
+               // porttx.queueToSend(payloadOfMessage);
+
+                porttx.testSend();
+
+
+                Log.d("from LED", "  " + payloadOfMessage );
 
 
 

@@ -14,27 +14,29 @@ public  class CMPPort {
 
 
     private BlockingQueue<Payload> payloadFifo;
-    private static CMPPort cmpPort;
+    private static CMPPort inst;
     private byte[] byteBuffer;
     private long timeOld;
     private long sendRateMs = 200;
-    private MainMenu mymm;
+    //private MainMenu mymm;
 
     CMPPort()
     {
         timeOld = 0;
         byteBuffer = new byte[20];
-        this.mymm = mymm.getInstance();
+        //mymm = mymm.getInstance();
+
         payloadFifo = new ArrayBlockingQueue<Payload>(50);
     }
 
     public static synchronized CMPPort getInstance()
     {
-        if(cmpPort == null)
+        if(inst == null)
         {
-            cmpPort = new CMPPort();
+            inst = new CMPPort();
+            inst.init();
         }
-        return cmpPort;
+        return inst;
     }
 
 
@@ -65,12 +67,30 @@ public  class CMPPort {
             }
 
 
-            mymm.sendMessageOverBLE(byteBuffer,(payloadNumber * 5));//send from this buffer, this many bytes
-
+            MainMenu.getInstance().sendMessageOverBLE(byteBuffer,(payloadNumber * 5));//send from this buffer, this many bytes
+            Log.d("message", " "+ byteBuffer);
             Log.d("Sending Message", "Should have been sent over BLE: ");
 
             timeOld = System.currentTimeMillis();
         }
+
+    }
+
+    public void testSend()
+    {
+
+        byteBuffer[0] = (byte)0x01;
+        byteBuffer[1] = (byte)0x02;
+        byteBuffer[2] = (byte)0x03;
+        byteBuffer[3] = (byte)0x04;
+        byteBuffer[4] = (byte)0x05;
+
+
+
+
+        MainMenu.getInstance().sendMessageOverBLE(byteBuffer,(5));//send from this buffer, this many bytes
+        Log.d("message", " "+ byteBuffer);
+        Log.d("Sending Message", "Should have been sent over BLE: ");
 
     }
 
