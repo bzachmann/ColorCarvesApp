@@ -19,9 +19,9 @@ public class CommThread extends Thread {
 
 
 
-    public CommThread() {
+    public CommThread(CMPPort cmpPort) {
         super(MY_BACKGROUND_THREAD);
-        porttx = new CMPPort();
+        porttx =cmpPort;
         //ThreadSend = new MainMenu();
         //ByteMessage = new byte[5];
 
@@ -31,7 +31,11 @@ public class CommThread extends Thread {
     @Override
     public void run() {
         super.run();
-        porttx.run();
+       // porttx.init();
+
+        while(true) {
+            porttx.run();
+        }
         //SendingQueue = ThreadPort.getCMPQueue();
     }
 }

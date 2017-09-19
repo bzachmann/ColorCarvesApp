@@ -1,5 +1,7 @@
 package com.jackson.andrew.colorcarvesapp;
 
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -8,31 +10,42 @@ import java.util.concurrent.BlockingQueue;
  * Created by User on 9/8/2017.
  */
 
-public class CMPPort {
+public  class CMPPort {
 
 
     private BlockingQueue<Payload> payloadFifo;
+    private static CMPPort cmpPort;
     private byte[] byteBuffer;
     private long timeOld;
     private long sendRateMs = 200;
-    private MainMenu mm;
-    //BLEServices myBLE;
+    private MainMenu mymm;
 
-    CMPPort() {
+    CMPPort()
+    {
         timeOld = 0;
         byteBuffer = new byte[20];
-        payloadFifo = new ArrayBlockingQueue<Payload>(30);
-        mm = new MainMenu();
+        this.mymm = mymm.getInstance();
+        payloadFifo = new ArrayBlockingQueue<Payload>(50);
+    }
 
+    public static synchronized CMPPort getInstance()
+    {
+        if(cmpPort == null)
+        {
+            cmpPort = new CMPPort();
+        }
+        return cmpPort;
     }
 
 
-    public void init() {
+    public void init()
+    {
         payloadFifo.clear();
         timeOld = System.currentTimeMillis();
     }
 
-    public void run() {
+    public void run()
+    {
         long timeNew = System.currentTimeMillis();
         if (((timeNew - timeOld) > sendRateMs) && (!payloadFifo.isEmpty())) {
             //make sure there is mutual exclusion between threads in the blocking queue
@@ -52,7 +65,9 @@ public class CMPPort {
             }
 
 
-            mm.sendMessageOverBLE(byteBuffer,(payloadNumber * 5));//send from this buffer, this many bytes
+            mymm.sendMessageOverBLE(byteBuffer,(payloadNumber * 5));//send from this buffer, this many bytes
+
+            Log.d("Sending Message", "Should have been sent over BLE: ");
 
             timeOld = System.currentTimeMillis();
         }

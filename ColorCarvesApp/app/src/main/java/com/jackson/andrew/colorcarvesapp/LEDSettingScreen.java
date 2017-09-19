@@ -9,23 +9,34 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
-public class LEDSettingScreen extends AppCompatActivity {
+public class LEDSettingScreen extends AppCompatActivity{
 
-    public CheckBox LEDAllSelected;
-    public CheckBox KeepLEDOnOff;
-    public CheckBox LEDOnOff;
-    public CheckBox KeepOffset;
-    public Button LEDConfirm;
-    public Button LEDCancel;
-    public SeekBar LEDOffsetSeekbar;
-    public EditText LEDIndex;
-    public Button LEDColorDisplay;
-    public byte Red;
-    public byte Blue;
-    public byte Green;
-    public int ConvertedColor;
+    private CheckBox LEDAllSelected;
+    private CheckBox KeepLEDOnOff;
+    private CheckBox LEDOnOff;
+    private CheckBox KeepOffset;
+    private Button LEDConfirm;
+    private Button LEDCancel;
+    private SeekBar LEDOffsetSeekbar;
+    private EditText LEDIndex;
+    private Button LEDColorDisplay;
+    private byte Red;
+    private byte Blue;
+    private byte Green;
+    private int ConvertedColor;
+    private byte stateOfLed;
+    private byte indexOfLed;
+    private byte [] offsetOfLed;
+    private Payload payloadOfMessage;
+    private byte ledStateData2 = (byte)0x03;//2 bits for on/off
+    private byte ledIndexData1 = (byte)0xFC; //top 6 bits to set index
+    private byte ledOffsetData1 = (byte)0x03; // 2 bits for offset data
+    private byte ledOffsetData0 = (byte)0xFF; //All of data 0
+    private byte id = (byte)0x10; //protocol id for LED page
+    private CMPPort porttx;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,17 +52,50 @@ public class LEDSettingScreen extends AppCompatActivity {
         LEDOffsetSeekbar = (SeekBar)findViewById(R.id.LEDOffsetSeekbar);
         LEDIndex = (EditText) findViewById(R.id.LEDIndex);
         LEDColorDisplay = (Button) findViewById(R.id.LEDOffsetDisplay);
-
         LEDColorDisplay.setBackgroundColor(getConvertedColor());
-
-
-
         LEDOffsetSeekbar.setEnabled(false);
         LEDOnOff.setEnabled(false);
-
         readSeek(LEDOffsetSeekbar);
+        payloadOfMessage = new Payload();
+        porttx = CMPPort.getInstance();
         LEDConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                stateOfLed = (byte)(0x01); //Initial state is on
+                indexOfLed = (byte)(0xFF); //Initial state is led 0
+                offsetOfLed = new byte[2];
+                offsetOfLed[1] = (byte)0x03; //MSB 10 and 9 set to 0
+                offsetOfLed[0] = (byte)0xFF;// LS byte  of offset
+                if(!KeepLEDOnOff.isChecked())
+                {
+                    if(LEDOnOff.isChecked()) //Checked to off
+                    {
+                        stateOfLed = (byte) 0x00;//Otherwise keep to on
+                    }
+                }
+                if(LEDAllSelected.isChecked())
+                {
+                    indexOfLed = (byte)0x3F; //set to 63 which means all in protocol
+                }
+                if(!KeepOffset.isChecked())
+                {
+                    int tempOffset = LEDOffsetSeekbar.getProgress();
+                    offsetOfLed = intToByteArray(tempOffset); //Sets the two bytes to the correct value
+                }
+                if(!LEDAllSelected.isChecked())
+                {
+                    indexOfLed = (byte) (getIndex()); //sets index in users numpad to byte
+                }
+
+                payloadOfMessage.id.setId(id);
+                payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
+                payloadOfMessage.data.setData(1, (byte)(indexOfLed>> 2 & ledIndexData1 & (offsetOfLed[1] & ledOffsetData1)));
+                payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
+                porttx.queueToSend(payloadOfMessage);
+
+
+
+
+
 
                 ReturnToMainMenu();
             }
@@ -112,7 +156,7 @@ public class LEDSettingScreen extends AppCompatActivity {
                 Red = getRed();
                 Blue = getBlue();
                 Green = getGreen();
-                ColorToHex(Red, Green, Blue); //Takes the three separate colors Red Blue and Green converts them to hex
+                colorToHex(Red, Green, Blue); //Takes the three separate colors Red Blue and Green converts them to hex
 
                 LEDColorDisplay.setBackgroundColor(getConvertedColor());  //sets offset text to color
 
@@ -174,17 +218,22 @@ public class LEDSettingScreen extends AppCompatActivity {
     }
 */
 
-            public int GetIndex() {   //Grabs Numpad User number to integer value passed to byte array
+            public int getIndex() {   //Grabs Numpad User number to integer value passed to byte array
                 String TempIndex;
                 TempIndex = LEDIndex.getText().toString();
                 int index;
+
                 index = Integer.parseInt(TempIndex);
 
+
+
                 return index;
+
             }
 
 
-            public void ColorToHex(byte R, byte G, byte B) {
+            public void colorToHex(byte R, byte G, byte B)
+            {
 
                 String CurrentColor = String.format("#%02x%02x%02x", R, G, B);
                 ConvertedColor = Color.parseColor(CurrentColor);
@@ -235,4 +284,14 @@ public class LEDSettingScreen extends AppCompatActivity {
 
 
             }
+    public byte[] intToByteArray(int val)
+    {
+        byte topTwoBits = (byte)0xC0;
+        byte[] tempResult = new byte[2];
+
+        tempResult[1] = (byte)(val >> 22 & topTwoBits ); //Sets the top 2 bits from the value of brightness/offset setting to byte[1]
+        tempResult[0] = (byte)(val >> 24);  //Sets the bottom byte from the value of brightness/offset
+
+        return tempResult;
+    }
         }

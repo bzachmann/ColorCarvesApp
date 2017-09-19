@@ -22,7 +22,7 @@ public class BaseSettingScreen extends AppCompatActivity {
     private TextView BrightnessDisplay;
     private TextView OffsetDisplay;
     private Payload PayloadOfMessage;
-    private CMPPort porttx;
+    private static CMPPort porttx;
     private byte UnifBright1 = (byte)0xFC; //Set to top 6 bits of data1
     private byte UnifBright2 = (byte)0x0F; //Set to bottom 4 bits of data2
     private byte id = (byte)0x14; //Set to ID of basesetting
@@ -30,6 +30,7 @@ public class BaseSettingScreen extends AppCompatActivity {
     private byte UnifOffset1 = (byte)(0x03); //Set to bottom 2 bits of data1
     private byte[] ByteKeepCurrentBrightness;
     private byte [] ByteKeepCurrentOffset;
+
 
 
 
@@ -48,7 +49,7 @@ public class BaseSettingScreen extends AppCompatActivity {
         BrightnessDisplay = (TextView) findViewById(R.id.BrightnessDisplay);
         OffsetDisplay= (TextView) findViewById(R.id.OffsetDisplay);
         PayloadOfMessage = new Payload();
-        porttx = new CMPPort();
+
 
 
 
@@ -145,7 +146,7 @@ public class BaseSettingScreen extends AppCompatActivity {
 
     public void DisplayBrightness(int Brightness) {
 
-        BrightnessDisplay.setText(String.valueOf(Brightness + "%"));  // Display wheel diam divide by 10 to convert to decimal
+        BrightnessDisplay.setText(String.valueOf(Brightness + "%"));
     }
 
     public void DisplayOffset (int offset){

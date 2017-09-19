@@ -23,6 +23,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +56,9 @@ public class MainMenu extends AppCompatActivity{
     public Button ToEnableOptions;
     public TextView DeviceAdressDisplay;
     public MessageQueue AppMessageQueue;
+    private static MainMenu mm;
+    private CMPPort porttx;
+    private CommThread BackgroundThread;
 
     public static final String DEVICE_NAME = "DEVICE_NAME";
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -147,6 +151,9 @@ public class MainMenu extends AppCompatActivity{
         DeviceAdressDisplay=(TextView)findViewById(R.id.DeviceAddressDisplay);
 
 
+        startBackgroundThread();
+
+
 
 
 
@@ -225,6 +232,7 @@ public class MainMenu extends AppCompatActivity{
 
     public void GoToLedSetting (){
         Intent myIntent = new Intent(MainMenu.this, LEDSettingScreen.class);
+
         myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
         MainMenu.this.startActivity(myIntent);
@@ -418,9 +426,35 @@ public class MainMenu extends AppCompatActivity{
         if (mConnected)
         {
             characteristicTX.setValue(userMessage);
+            Log.d("Send MEssage Over BLE", userMessage.toString());
             mBluetoothLeService.writeCharacteristic(characteristicTX);
             mBluetoothLeService.setCharacteristicNotification(characteristicRX, true);
 
+
+        }
+    }
+
+    public static synchronized MainMenu getInstance()
+    {
+        if(mm == null)
+        {
+            mm = new MainMenu();
+
+        }
+        return mm;
+    }
+
+    private void startBackgroundThread() {
+        BackgroundThread = new CommThread(porttx.getInstance()); // Pass the Queue to the thread
+        BackgroundThread.start();
+        Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
+
+    }
+
+    private void stopBackgroundThread() {
+        if (BackgroundThread != null) {
+            BackgroundThread = null; // thread is now dead, we need to free from memory
+            Toast.makeText(this, "stopping...", Toast.LENGTH_SHORT).show();
 
         }
     }

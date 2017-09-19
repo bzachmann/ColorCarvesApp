@@ -3,6 +3,7 @@ package com.jackson.andrew.colorcarvesapp;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -25,11 +26,13 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 
+
 public class MainActivity extends AppCompatActivity {
 
 
     private Button ToMainMenu;
-    private CommThread BackgroundThread;
+
+
 
 
 
@@ -40,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ToMainMenu = (Button) findViewById(R.id.ScanButton);
-        startBackgroundThread();
+
 
 
 
@@ -66,20 +69,7 @@ public void StartBluetoothScan() {
 
 }
 
-    private void startBackgroundThread() {
-       BackgroundThread = new CommThread(); // Pass the Queue to the thread
-        BackgroundThread.start();
-        Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
 
-    }
-
-    private void stopBackgroundThread() {
-        if (BackgroundThread != null) {
-            BackgroundThread = null; // thread is now dead, we need to free from memory
-            Toast.makeText(this, "stopping...", Toast.LENGTH_SHORT).show();
-
-        }
-    }
 }
 
 
