@@ -150,6 +150,11 @@ public class MainMenu extends AppCompatActivity{
         ToEnableOptions = (Button) findViewById(R.id.ToEnableOptions);
         DeviceAdressDisplay=(TextView)findViewById(R.id.DeviceAddressDisplay);
 
+        if(mConnected)
+        {
+            DeviceAdressDisplay.setVisibility(View.VISIBLE);
+        }
+
 
         startBackgroundThread();
 
@@ -210,6 +215,11 @@ public class MainMenu extends AppCompatActivity{
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d("Connection", "Connect request result=" + result);
+        }
+
+        if(mConnected)
+        {
+            DeviceAdressDisplay.setVisibility(View.VISIBLE);
         }
     }
 
@@ -387,7 +397,7 @@ public class MainMenu extends AppCompatActivity{
     private void displayData(String data) {
 
         if (data != null) {
-            DeviceAdressDisplay.setText(data);
+            //DeviceAdressDisplay.setText(data);
         }
     }
 

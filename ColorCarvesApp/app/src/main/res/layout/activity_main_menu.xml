@@ -102,7 +102,7 @@
         android:id="@+id/DeviceAddress"
         android:layout_width="75dp"
         android:layout_height="32dp"
-        android:text="Device Address:"
+        android:text="Device Connected"
         tools:layout_constraintBottom_creator="1"
         android:layout_marginStart="36dp"
         app:layout_constraintBottom_toBottomOf="@+id/DeviceAddressDisplay"
@@ -112,6 +112,8 @@
 
     <TextView
         android:id="@+id/DeviceAddressDisplay"
+        android:text="Connected"
+        android:visibility="invisible"
         android:layout_width="222dp"
         android:layout_height="30dp"
         tools:layout_constraintTop_creator="1"
