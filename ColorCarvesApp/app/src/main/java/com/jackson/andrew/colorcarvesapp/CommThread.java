@@ -31,7 +31,7 @@ public class CommThread extends Thread {
     @Override
     public void run() {
         super.run();
-       // porttx.init();
+        porttx.init();
 
         while(true) {
             porttx.run();

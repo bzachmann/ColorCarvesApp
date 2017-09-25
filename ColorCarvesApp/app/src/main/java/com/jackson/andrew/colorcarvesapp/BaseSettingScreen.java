@@ -22,7 +22,6 @@ public class BaseSettingScreen extends AppCompatActivity {
     private TextView BrightnessDisplay;
     private TextView OffsetDisplay;
     private Payload PayloadOfMessage;
-    private static CMPPort porttx;
     private byte UnifBright1 = (byte)0xFC; //Set to top 6 bits of data1
     private byte UnifBright2 = (byte)0x0F; //Set to bottom 4 bits of data2
     private byte id = (byte)0x14; //Set to ID of basesetting
@@ -68,12 +67,12 @@ public class BaseSettingScreen extends AppCompatActivity {
 
                 if(!KeepBrightness.isChecked()) //Brightness has changed
                 {
-                    ByteKeepCurrentBrightness = intToByteArray(BrightnessSeekbar.getProgress()* 765); //from 0 - 100 to 0 - 765
+                     intToByteArray(ByteKeepCurrentOffset,BrightnessSeekbar.getProgress()); //from 0 - 100 to 0 - 700
 
                 }
                 if(!KeepOffset.isChecked())
                 {
-                    ByteKeepCurrentOffset = intToByteArray(OffsetSeekbar.getProgress());
+                     intToByteArray(ByteKeepCurrentOffset,OffsetSeekbar.getProgress());
                 }
 
 
@@ -93,12 +92,12 @@ public class BaseSettingScreen extends AppCompatActivity {
                     ByteKeepCurrentOffset[1] = (byte)0xFF;
                 }
 
-
+                byte tempByte =  ByteKeepCurrentBrightness[0]; // allows for shifting without losing data
                 PayloadOfMessage.id.setId(id);
-                PayloadOfMessage.data.setData(2,(byte)(ByteKeepCurrentBrightness[1] >> 2 & ByteKeepCurrentBrightness[0] <<6  & UnifBright2));  //bits 10 - 7 of Brightness
-                PayloadOfMessage.data.setData(1,(byte)((ByteKeepCurrentBrightness[0] >> 6 & UnifBright1)&((ByteKeepCurrentOffset[1] << 6 & UnifOffset1))));  //bits 6-1 of brightness and bits 10,9 of offset
+                PayloadOfMessage.data.setData(2,(byte)((ByteKeepCurrentBrightness[1] << 2) + (tempByte >> 6  & UnifBright2)));  //bits 10 - 7 of Brightness
+                PayloadOfMessage.data.setData(1,(byte)(((ByteKeepCurrentBrightness[0] << 2) & UnifBright1)+((ByteKeepCurrentOffset[1]  & UnifOffset1))));  //bits 6-1 of brightness and bits 10,9 of offset
                 PayloadOfMessage.data.setData(0,(byte)(ByteKeepCurrentOffset[0] & UnifOffset0));
-                porttx.queueToSend(PayloadOfMessage); // Payload to message queue
+                CMPPort.getInstance().queueToSend(PayloadOfMessage); // Payload to message queue
 
 
 
@@ -146,7 +145,9 @@ public class BaseSettingScreen extends AppCompatActivity {
 
     public void DisplayBrightness(int Brightness) {
 
-        BrightnessDisplay.setText(String.valueOf(Brightness + "%"));
+        double tempBrightness = Brightness/7.65; //Convert from 765 to 0-100%
+
+        BrightnessDisplay.setText(String.valueOf(tempBrightness + "%"));
     }
 
     public void DisplayOffset (int offset){
@@ -228,15 +229,14 @@ public class BaseSettingScreen extends AppCompatActivity {
         }
     }
 
-    public byte[] intToByteArray(int val)
+    public void intToByteArray(byte [] val, int data)
     {
-        byte topTwoBits = (byte)0xC0;
-        byte[] tempResult = new byte[2];
 
-        tempResult[1] = (byte)(val >> 22 & topTwoBits ); //Sets the top 2 bits from the value of brightness/offset setting to byte[1]
-        tempResult[0] = (byte)(val >> 24);  //Sets the bottom byte from the value of brightness/offset
+        val[0] = (byte)(data & 0xFF);  //discards all but bottom 8 bits of val
+        val[1] = (byte)((data >> 8 )); // takes val and discards bottom 8 bits.
 
-        return tempResult;
+
+
     }
 
 

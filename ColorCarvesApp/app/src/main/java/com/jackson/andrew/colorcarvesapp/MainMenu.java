@@ -57,7 +57,6 @@ public class MainMenu extends AppCompatActivity{
     public TextView DeviceAdressDisplay;
     public MessageQueue AppMessageQueue;
     private static MainMenu mm;
-    private CMPPort porttx;
     private CommThread BackgroundThread;
 
     public static final String DEVICE_NAME = "DEVICE_NAME";
@@ -446,7 +445,7 @@ public class MainMenu extends AppCompatActivity{
     }
 
     private void startBackgroundThread() {
-        BackgroundThread = new CommThread(porttx.getInstance()); // Pass the Queue to the thread
+        BackgroundThread = new CommThread(CMPPort.getInstance()); // Pass the Queue to the thread
         BackgroundThread.start();
         Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
 

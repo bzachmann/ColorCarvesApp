@@ -35,7 +35,7 @@ public class LEDSettingScreen extends AppCompatActivity{
     private byte ledOffsetData1 = (byte)0x03; // 2 bits for offset data
     private byte ledOffsetData0 = (byte)0xFF; //All of data 0
     private byte id = (byte)0x10; //protocol id for LED page
-    private CMPPort porttx;
+
 
 
 
@@ -58,7 +58,6 @@ public class LEDSettingScreen extends AppCompatActivity{
         LEDOnOff.setEnabled(false);
         readSeek(LEDOffsetSeekbar);
         payloadOfMessage = new Payload();
-        porttx = CMPPort.getInstance();
         LEDConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 stateOfLed = (byte)(0x01); //Initial state is on
@@ -75,12 +74,12 @@ public class LEDSettingScreen extends AppCompatActivity{
                 }
                 if(LEDAllSelected.isChecked())
                 {
-                    indexOfLed = (byte)0x3F; //set to 63 which means all in protocol
+                    indexOfLed = (byte)0x3F; //set to 63 top 6 bits of data1 message
                 }
                 if(!KeepOffset.isChecked())
                 {
                     int tempOffset = LEDOffsetSeekbar.getProgress();
-                    offsetOfLed = intToByteArray(tempOffset); //Sets the two bytes to the correct value
+                    intToByteArray(offsetOfLed,tempOffset); //Sets the two bytes to the correct value
                 }
                 if(!LEDAllSelected.isChecked())
                 {
@@ -89,14 +88,9 @@ public class LEDSettingScreen extends AppCompatActivity{
 
                 payloadOfMessage.id.setId(id);
                 payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                payloadOfMessage.data.setData(1, (byte)(indexOfLed>> 2 & ledIndexData1 & (offsetOfLed[1] & ledOffsetData1)));
+                payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) + (offsetOfLed[1] & ledOffsetData1)));
                 payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-               // porttx.queueToSend(payloadOfMessage);
-
-                porttx.testSend();
-
-
-                Log.d("from LED", "  " + payloadOfMessage );
+                CMPPort.getInstance().queueToSend(payloadOfMessage);
 
 
 
@@ -227,14 +221,19 @@ public class LEDSettingScreen extends AppCompatActivity{
             public int getIndex() {   //Grabs Numpad User number to integer value passed to byte array
                 String TempIndex;
                 TempIndex = LEDIndex.getText().toString();
-                int index;
 
-                index = Integer.parseInt(TempIndex);
+                int retVal = 0;
 
+                try
+                {
+                    retVal = Integer.parseInt(TempIndex);
+                }
+                catch(Exception e)
+                {
+                    retVal = 0;
+                }
 
-
-                return index;
-
+                return retVal;
             }
 
 
@@ -242,6 +241,7 @@ public class LEDSettingScreen extends AppCompatActivity{
             {
 
                 String CurrentColor = String.format("#%02x%02x%02x", R, G, B);
+                Log.d("current color", CurrentColor); //display color selected in hex
                 ConvertedColor = Color.parseColor(CurrentColor);
 
             }
@@ -290,14 +290,13 @@ public class LEDSettingScreen extends AppCompatActivity{
 
 
             }
-    public byte[] intToByteArray(int val)
+    public void intToByteArray(byte [] val, int data)
     {
-        byte topTwoBits = (byte)0xC0;
-        byte[] tempResult = new byte[2];
 
-        tempResult[1] = (byte)(val >> 22 & topTwoBits ); //Sets the top 2 bits from the value of brightness/offset setting to byte[1]
-        tempResult[0] = (byte)(val >> 24);  //Sets the bottom byte from the value of brightness/offset
+        String tempColor = String.valueOf(data);
+        Log.d("AndysMessage", tempColor);
+        val[0] = (byte)(data);  //discards all but bottom 8 bits of val
+        val[1] = (byte)((data >> 8 )); // takes val and discards bottom 8 bits.
 
-        return tempResult;
     }
         }
