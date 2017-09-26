@@ -53,8 +53,8 @@
 
     <CheckBox
         android:id="@+id/KeepOffsetSetting"
-        android:layout_width="302dp"
-        android:layout_height="32dp"
+        android:layout_width="301dp"
+        android:layout_height="46dp"
         android:text="Keep Offset Settings"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
@@ -64,7 +64,9 @@
         tools:layout_constraintLeft_creator="1"
         app:layout_constraintLeft_toLeftOf="@+id/BrightnessSeekbar"
         android:checked="true"
-        app:layout_constraintHorizontal_bias="0.0" />
+        app:layout_constraintHorizontal_bias="0.0"
+        tools:layout_editor_absoluteY="186dp"
+        tools:layout_editor_absoluteX="43dp" />
 
     <SeekBar
         android:id="@+id/BrightnessSeekbar"
@@ -73,7 +75,7 @@
         android:layout_marginEnd="42dp"
         android:layout_marginStart="42dp"
         android:layout_marginTop="81dp"
-        android:max="100"
+        android:max="765"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -123,6 +125,8 @@
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        tools:layout_constraintTop_creator="1"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintVertical_bias="0.527" />
 
 </android.support.constraint.ConstraintLayout>
