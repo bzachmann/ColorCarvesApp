@@ -9,14 +9,26 @@ import android.widget.CheckBox;
 
 public class EnableOptionsSettingScreen extends AppCompatActivity {
 
-    public Button EnableOptionsConfirm;
-    public Button EnableOptionsCancel;
-    public CheckBox KeepOffsetSettings;
-    public CheckBox KeepBrightnessSettings;
-    public CheckBox KeepPatternSettings;
-    public CheckBox OffsetInfluence;
-    public CheckBox PatternInfluence;
-    public CheckBox BrightnessInfluence;
+    private Button EnableOptionsConfirm;
+    private Button EnableOptionsCancel;
+    private CheckBox checkboxKeepOffsetSettings;
+    private CheckBox checkboxKeepBrightnessSettings;
+    private CheckBox checkboxKeepPatternSettings;
+    private CheckBox checkboxOffsetInfluence;
+    private CheckBox checkboxPatternInfluence;
+    private CheckBox checkboxBrightnessInfluence;
+    private Payload payload;
+    private byte id = (byte)0X14;
+    private byte data2Pattern = (byte)0x0F;
+    private byte data1Brightness = (byte)0xF0;
+    private byte data1Offset = (byte)0x0F;
+    private byte data0Pattern = (byte)0x30;
+    private byte data0Bright = (byte)0x0C;
+    private byte data0Offset = (byte)0x03;
+    private byte bytePatternOn = (byte)0x30; //set as a dont care in correct position of protocol
+    private byte byteBrightOn = (byte)0x0C; //set as a dont care as protocol
+    private byte byteOffsetOn = (byte)0x03; //protocol for dont care
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,19 +37,53 @@ public class EnableOptionsSettingScreen extends AppCompatActivity {
 
         EnableOptionsConfirm = (Button) findViewById(R.id.EnableOptionsConfirm);
         EnableOptionsCancel = (Button) findViewById(R.id.EnableOptionsCancel);
-        KeepOffsetSettings = (CheckBox) findViewById(R.id.KeepOffsetSetting);
-        KeepBrightnessSettings = (CheckBox) findViewById(R.id.KeepBrightnessSetting);
-        KeepPatternSettings = (CheckBox) findViewById(R.id.KeepPatternSetting);
-        OffsetInfluence = (CheckBox) findViewById(R.id.OffSetInfluenced);
-        PatternInfluence = (CheckBox) findViewById(R.id.PatternInfluenced);
-        BrightnessInfluence = (CheckBox) findViewById(R.id.BrightnessInfluenced);
+        checkboxKeepOffsetSettings = (CheckBox) findViewById(R.id.KeepOffsetSetting);
+        checkboxKeepBrightnessSettings = (CheckBox) findViewById(R.id.KeepBrightnessSetting);
+        checkboxKeepPatternSettings = (CheckBox) findViewById(R.id.KeepPatternSetting);
+        checkboxOffsetInfluence = (CheckBox) findViewById(R.id.OffSetInfluenced);
+        checkboxPatternInfluence = (CheckBox) findViewById(R.id.PatternInfluenced);
+        checkboxBrightnessInfluence = (CheckBox) findViewById(R.id.BrightnessInfluenced);
 
-        OffsetInfluence.setEnabled(false);
-        PatternInfluence.setEnabled(false); // All checkboxes are grayed out untill keep settings is not selected
-        BrightnessInfluence.setEnabled(false);
+        checkboxOffsetInfluence.setEnabled(false);
+        checkboxPatternInfluence.setEnabled(false); // All checkboxes are grayed out untill keep settings is not selected
+        checkboxBrightnessInfluence.setEnabled(false);
+
+        payload = new Payload();
+
 
         EnableOptionsConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                if(checkboxOffsetInfluence.isChecked())
+                {
+                    byteOffsetOn = (byte)0x01;//offset influence on
+                }
+                if(!checkboxOffsetInfluence.isChecked() && !checkboxKeepOffsetSettings.isChecked())
+                {
+                    byteOffsetOn = (byte)0x00; //offset influence off
+                }
+                if(checkboxBrightnessInfluence.isChecked())
+                {
+                    byteBrightOn = (byte)0x04;//brightness influence on
+                }
+                if(!checkboxBrightnessInfluence.isChecked() && !checkboxKeepBrightnessSettings.isChecked())
+                {
+                    byteBrightOn = (byte)0x00; //brightness influence off
+                }
+                if(checkboxPatternInfluence.isChecked())
+                {
+                    bytePatternOn = (byte)0x10;//pattern influence on
+                }
+                if(!checkboxPatternInfluence.isChecked() && !checkboxKeepPatternSettings.isChecked())
+                {
+                    bytePatternOn = (byte)0x00; //pattern influence off
+                }
+
+                payload.id.setId(id);
+                payload.data.setData(2, data2Pattern); // will and with pattern later
+                payload.data.setData(1,(byte)(data1Brightness + data1Offset)); //will and with bright and offset later
+                payload.data.setData(0, (byte)((data0Pattern & bytePatternOn)+(data0Bright & byteBrightOn)+ (data0Offset & byteOffsetOn)));
+                CMPPort.getInstance().queueToSend(payload); //send to queue
 
                 ReturnToMainMenu();
             }
@@ -50,36 +96,36 @@ public class EnableOptionsSettingScreen extends AppCompatActivity {
             }
         });
 
-        KeepOffsetSettings.setOnClickListener(new View.OnClickListener() {
+        checkboxKeepOffsetSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOFSettings(KeepOffsetSettings,OffsetInfluence);
+                CheckStatusOFSettings(checkboxKeepOffsetSettings, checkboxOffsetInfluence);
             }
         });
 
-        KeepBrightnessSettings.setOnClickListener(new View.OnClickListener() {
+        checkboxKeepBrightnessSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOFSettings(KeepBrightnessSettings,BrightnessInfluence);
+                CheckStatusOFSettings(checkboxKeepBrightnessSettings, checkboxBrightnessInfluence);
             }
         });
-        KeepPatternSettings.setOnClickListener(new View.OnClickListener() {
+        checkboxKeepPatternSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOFSettings(KeepPatternSettings,PatternInfluence);
+                CheckStatusOFSettings(checkboxKeepPatternSettings, checkboxPatternInfluence);
             }
         });
 
-        OffsetInfluence.setOnClickListener(new View.OnClickListener() {
+        checkboxOffsetInfluence.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOFSettings(KeepOffsetSettings,OffsetInfluence);
+                CheckStatusOFSettings(checkboxKeepOffsetSettings, checkboxOffsetInfluence);
             }
         });
-        BrightnessInfluence.setOnClickListener(new View.OnClickListener() {
+        checkboxBrightnessInfluence.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOFSettings(KeepBrightnessSettings,BrightnessInfluence);
+                CheckStatusOFSettings(checkboxKeepBrightnessSettings, checkboxBrightnessInfluence);
             }
         });
-        PatternInfluence.setOnClickListener(new View.OnClickListener() {
+        checkboxPatternInfluence.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOFSettings(KeepPatternSettings,PatternInfluence);
+                CheckStatusOFSettings(checkboxKeepPatternSettings, checkboxPatternInfluence);
             }
         });
 
@@ -96,14 +142,7 @@ public class EnableOptionsSettingScreen extends AppCompatActivity {
         else {
             influence.setEnabled(true);
         }
-        if(influence.isChecked()) {
-            currentsettings.setChecked(false);
-            currentsettings.setEnabled(false);
-        }
-        else{
-            currentsettings.setEnabled(true);
 
-        }
     }
 
     public void ReturnToMainMenu(){
