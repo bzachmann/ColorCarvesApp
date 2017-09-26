@@ -154,6 +154,10 @@ public class MainMenu extends AppCompatActivity{
         {
             DeviceAdressDisplay.setVisibility(View.VISIBLE);
         }
+        else
+        {
+            DeviceAdressDisplay.setVisibility(View.INVISIBLE);
+        }
 
 
         startBackgroundThread();
@@ -220,6 +224,10 @@ public class MainMenu extends AppCompatActivity{
         if(mConnected)
         {
             DeviceAdressDisplay.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            DeviceAdressDisplay.setVisibility(View.INVISIBLE);
         }
     }
 
