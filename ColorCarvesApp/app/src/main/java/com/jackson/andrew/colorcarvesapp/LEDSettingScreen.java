@@ -60,7 +60,7 @@ public class LEDSettingScreen extends AppCompatActivity{
         payloadOfMessage = new Payload();
         LEDConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                stateOfLed = (byte)(0x01); //Initial state is on
+                stateOfLed = (byte)(0x11); //Initial state is dont care in protocol
                 indexOfLed = (byte)(0xFF); //Initial state is led 0
                 offsetOfLed = new byte[2];
                 offsetOfLed[1] = (byte)0x03; //MSB 10 and 9 set to 0
@@ -69,7 +69,11 @@ public class LEDSettingScreen extends AppCompatActivity{
                 {
                     if(LEDOnOff.isChecked()) //Checked to off
                     {
-                        stateOfLed = (byte) 0x00;//Otherwise keep to on
+                        stateOfLed = (byte) 0x01;//led on
+                    }
+                    if(!LEDOnOff.isChecked())
+                    {
+                        stateOfLed = (byte)0x00; //led off
                     }
                 }
                 if(LEDAllSelected.isChecked())

@@ -18,7 +18,7 @@ public class EnableOptionsSettingScreen extends AppCompatActivity {
     private CheckBox checkboxPatternInfluence;
     private CheckBox checkboxBrightnessInfluence;
     private Payload payload;
-    private byte id = (byte)0X14;
+    private byte id = (byte)0X15;
     private byte data2Pattern = (byte)0x0F;
     private byte data1Brightness = (byte)0xF0;
     private byte data1Offset = (byte)0x0F;
