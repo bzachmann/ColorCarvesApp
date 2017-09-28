@@ -48,14 +48,14 @@ public class MainMenu extends AppCompatActivity{
     private boolean mScanning;
     private Handler mHandler;
 
-    public Button ToLEDScreen;
-    public Button ToAngleScreen;
-    public Button ToSpeedScreen;
-    public Button ToBoardSpecs;
-    public Button ToBaseSetting;
-    public Button ToEnableOptions;
-    public TextView DeviceAdressDisplay;
-    public MessageQueue AppMessageQueue;
+    private Button ToLEDScreen;
+    private Button ToAngleScreen;
+    private Button ToSpeedScreen;
+    private Button ToBoardSpecs;
+    private Button ToBaseSetting;
+    private Button ToEnableOptions;
+    private TextView DeviceAdressDisplay;
+
     private static MainMenu mm;
     private CommThread BackgroundThread;
 
