@@ -51,6 +51,7 @@
         android:layout_width="0dp"
         android:layout_height="35dp"
         android:text="LED State"
+        android:checked="true"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
         app:layout_constraintRight_toRightOf="@+id/KeepOnOff"
