@@ -18,8 +18,8 @@ public class SpeedSettingScreen extends AppCompatActivity {
     private EditText MaxSpeedDisplay;
     private CheckBox checkboxKeepMinSpeed;
     private CheckBox checkboxKeepMaxSpeed;
-    private int DefaultMinSpeed =0;       //Default speed
-    private int DefaultMaxSpeed = 9;   //Default speed
+    private double DefaultMinSpeed =0;       //Default speed
+    private double DefaultMaxSpeed = 12.6;   //Default speed
     private byte id = (byte)0x12;
     private byte data2 = (byte)0x00;
     private byte data1MaxSpeed = (byte)0x7F;
@@ -57,7 +57,7 @@ public class SpeedSettingScreen extends AppCompatActivity {
                 {
                     if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
                     {
-                        intToByteArray(byteMinSpeed, getSpeedSetting(MinSpeedDisplay));  //Get value from numpad and send it to a byte
+                        doubleToByteArray(byteMinSpeed, getSpeedSetting(MinSpeedDisplay));  //Get value from numpad and send it to a byte
 
                     }
                 }
@@ -66,7 +66,7 @@ public class SpeedSettingScreen extends AppCompatActivity {
                 {
                     if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
                     {
-                        intToByteArray(byteMaxSpeed, getSpeedSetting(MaxSpeedDisplay));  //Get value from numpad and send it to a byte
+                        doubleToByteArray(byteMaxSpeed, getSpeedSetting(MaxSpeedDisplay));  //Get value from numpad and send it to a byte
 
                     }
 
@@ -110,21 +110,21 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
 
 
-    public int getMinSpeed() {   //Grabs Numpad User number to integer value passed to byte array
+    public double getMinSpeed() {   //Grabs Numpad User number to integer value passed to byte array
         String TempSpeed;
         TempSpeed = MinSpeedDisplay.getText().toString();
-        int Speed;
-        Speed = Integer.parseInt(TempSpeed);
+        double Speed;
+        Speed = Double.parseDouble(TempSpeed);
 
                 return Speed;
     }
 
-    public int getMaxSpeed(){
+    public double getMaxSpeed(){
 
         String TempSpeed;
         TempSpeed = MaxSpeedDisplay.getText().toString();
-        int Speed;
-        Speed = Integer.parseInt(TempSpeed);
+        double Speed;
+        Speed = Double.parseDouble(TempSpeed);
 
         return Speed;
     }
@@ -160,20 +160,25 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
     }
 
-    public int getSpeedSetting(TextView displayText) {   //Grabs Numpad User number to integer value passed to byte array
+    public double getSpeedSetting(TextView displayText) {   //Grabs Numpad User number to integer value passed to byte array
         String TempIndex;
         TempIndex = displayText.getText().toString();
 
-        int retVal = 0;
+        double  retVal = 0;
 
         try
         {
-            retVal = Integer.parseInt(TempIndex);
+            retVal = Double.parseDouble(TempIndex);
             retVal = retVal * 10; //convert to 0-126 for byte value of speed
 
-            if(retVal < 0 || retVal > 127)
+            if(retVal < 0 )
             {
                 retVal = 0;   //Makes sure valid number was entered on the numpad
+
+            }
+            if(retVal > 127)
+            {
+                retVal = 126; //max speed for long board
 
             }
         }
@@ -186,7 +191,7 @@ public class SpeedSettingScreen extends AppCompatActivity {
     }
 
 
-    public void intToByteArray(byte val, int data)
+    public void doubleToByteArray(byte val, double data)
     {
         val = (byte)data;
 
