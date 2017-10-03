@@ -11,15 +11,15 @@ import android.view.View;
 
 public class AngleSettingScreen extends AppCompatActivity {
 
-    private CheckBox keepAngleCurrentSetting;
-    private CheckBox AngleAbsoluteMode;
+    private CheckBox checkboxkeepAngleCurrentSetting;
+    private CheckBox checkboxAngleAbsoluteMode;
     private Button AngleConfirm;
     private Button AngleCancel;
     private SeekBar AngleLimitSeekBar;
     private TextView AngleLimitDisplay;
-    private CheckBox KeepAbsoluteMode;
+    private CheckBox checkboxKeepAbsoluteMode;
     private int DefaultAngleSetting = 0;
-    private Payload messagePayload;
+    private Payload payload;
     private byte id;
     private byte absoluteMode;
     private byte anglesetData1;
@@ -34,16 +34,16 @@ public class AngleSettingScreen extends AppCompatActivity {
         setContentView(R.layout.activity_angle_setting_screen);
 
 
-        AngleAbsoluteMode = (CheckBox) findViewById(R.id.AngleAbsoluteMode);
-        keepAngleCurrentSetting = (CheckBox) findViewById(R.id.AngleCurrentSetting);
+        checkboxAngleAbsoluteMode = (CheckBox) findViewById(R.id.AngleAbsoluteMode);
+        checkboxkeepAngleCurrentSetting = (CheckBox) findViewById(R.id.AngleCurrentSetting);
         AngleConfirm = (Button) findViewById(R.id.AngleConfirm);
         AngleCancel = (Button) findViewById(R.id.AngleCancel);
         AngleLimitSeekBar = (SeekBar) findViewById(R.id.AngleLimitSeekBar);
         AngleLimitDisplay = (TextView) findViewById(R.id.AngleLimitDisplay);
-        KeepAbsoluteMode = (CheckBox) findViewById(R.id.KeepAbsoluteMode);
+        checkboxKeepAbsoluteMode = (CheckBox) findViewById(R.id.KeepAbsoluteMode);
         AngleLimitSeekBar.setEnabled(false);        //Grayed out when page is opened
-        AngleAbsoluteMode.setEnabled(false);
-        messagePayload = new Payload();
+        checkboxAngleAbsoluteMode.setEnabled(false);
+        payload = new Payload();
 
 
         AngleLimitDisplay.setText(String.valueOf(DefaultAngleSetting));  //Initializes to 0
@@ -59,18 +59,18 @@ public class AngleSettingScreen extends AppCompatActivity {
         angleLimit[0] = (byte) 0xFF;
 
 
-        keepAngleCurrentSetting.setOnClickListener(new View.OnClickListener() {
+        checkboxkeepAngleCurrentSetting.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (keepAngleCurrentSetting.isChecked()) {
+                if (checkboxkeepAngleCurrentSetting.isChecked()) {
                     AngleLimitSeekBar.setEnabled(false);
                 } else {
                     AngleLimitSeekBar.setEnabled(true);
                 }
             }
         });
-        KeepAbsoluteMode.setOnClickListener(new View.OnClickListener() {
+        checkboxKeepAbsoluteMode.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOfSetting(KeepAbsoluteMode);
+                CheckStatusOfSetting(checkboxKeepAbsoluteMode);
             }
         });
 
@@ -78,32 +78,36 @@ public class AngleSettingScreen extends AppCompatActivity {
         AngleConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                if (!KeepAbsoluteMode.isChecked() && AngleAbsoluteMode.isChecked()) {
+                if (!checkboxKeepAbsoluteMode.isChecked() && checkboxAngleAbsoluteMode.isChecked()) {
                     absoluteMode = (byte) 0x01; //absolute mode is on
                 }
+                if (!checkboxKeepAbsoluteMode.isChecked() && !checkboxAngleAbsoluteMode.isChecked())
+                {
+                    absoluteMode = (byte) 0x00; //absolute mode is turned off
+                }
 
-                if (!keepAngleCurrentSetting.isChecked()) {
+                if (!checkboxkeepAngleCurrentSetting.isChecked()) {
                      intToByteArray(angleLimit,AngleLimitSeekBar.getProgress());
                 }
 
 
-                messagePayload.id.setId(id);
-                messagePayload.data.setData(2, absoluteMode);
-                messagePayload.data.setData(1, (byte) (anglesetData1 & angleLimit[1]));
-                messagePayload.data.setData(0, (byte) (angleLimit[0] & anglesetData0));
-                CMPPort.getInstance().queueToSend(messagePayload);
+                 payload.id.setId(id);
+                 payload.data.setData(2, absoluteMode);
+                 payload.data.setData(1, (byte) (anglesetData1 & angleLimit[1]));
+                 payload.data.setData(0, (byte) (angleLimit[0] & anglesetData0));
+                CMPPort.getInstance().queueToSend(payload);
 
 
 
 
-                ReturnToMainMenu();
+                returnToMainMenu();
             }
         });
 
 
         AngleCancel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                ReturnToMainMenu();
+                returnToMainMenu();
             }
         });
 
@@ -128,7 +132,7 @@ public class AngleSettingScreen extends AppCompatActivity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                DisplayAngleLimit(mSeekBar.getProgress());
+                displayAngleLimit(mSeekBar.getProgress());
             }
         });
     }
@@ -139,24 +143,24 @@ public class AngleSettingScreen extends AppCompatActivity {
 
         if (mcheckbox.isChecked())
         {
-            AngleAbsoluteMode.setEnabled(false);
+            checkboxAngleAbsoluteMode.setEnabled(false);
 
         }
 
         if (!mcheckbox.isChecked())
         {
-            AngleAbsoluteMode.setEnabled(true);
+            checkboxAngleAbsoluteMode.setEnabled(true);
         }
     }
 
 
-    public void DisplayAngleLimit(int progress)
+    public void displayAngleLimit(int progress)
     {
         float AngleLimit = progress;
         AngleLimitDisplay.setText(String.valueOf(AngleLimit / 10) + " deg");
     }
 
-    public void ReturnToMainMenu()
+    public void returnToMainMenu()
     {
         Intent myIntent = new Intent(AngleSettingScreen.this, MainMenu.class);
         myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
