@@ -11,7 +11,7 @@ import android.view.View;
 
 public class AngleSettingScreen extends AppCompatActivity {
 
-    private CheckBox checkboxkeepAngleCurrentSetting;
+    private CheckBox checkboxKeepAngleCurrentSetting;
     private CheckBox checkboxAngleAbsoluteMode;
     private Button AngleConfirm;
     private Button AngleCancel;
@@ -20,11 +20,17 @@ public class AngleSettingScreen extends AppCompatActivity {
     private CheckBox checkboxKeepAbsoluteMode;
     private int DefaultAngleSetting = 0;
     private Payload payload;
-    private byte id;
-    private byte absoluteMode;
-    private byte anglesetData1;
-    private byte anglesetData0;
+    private byte id = (byte) 0x11; // Message protocol
+    private byte absoluteMode = (byte) 0x03; // dont care in message protocol
+    private byte anglesetData1 = (byte) 0x03; // bottom two bits of data 1 set to on
+    private byte anglesetData0 = (byte) 0xFF; // data zero set to all ones
     private byte[] angleLimit;
+
+
+
+
+
+
 
 
 
@@ -35,7 +41,7 @@ public class AngleSettingScreen extends AppCompatActivity {
 
 
         checkboxAngleAbsoluteMode = (CheckBox) findViewById(R.id.AngleAbsoluteMode);
-        checkboxkeepAngleCurrentSetting = (CheckBox) findViewById(R.id.AngleCurrentSetting);
+        checkboxKeepAngleCurrentSetting = (CheckBox) findViewById(R.id.AngleCurrentSetting);
         AngleConfirm = (Button) findViewById(R.id.AngleConfirm);
         AngleCancel = (Button) findViewById(R.id.AngleCancel);
         AngleLimitSeekBar = (SeekBar) findViewById(R.id.AngleLimitSeekBar);
@@ -48,20 +54,17 @@ public class AngleSettingScreen extends AppCompatActivity {
 
         AngleLimitDisplay.setText(String.valueOf(DefaultAngleSetting));  //Initializes to 0
 
-        CheckMySeekBar(AngleLimitSeekBar);  //Determine if the Angle should be adjusted
+        checkMySeekBar(AngleLimitSeekBar);  //Determine if the Angle should be adjusted
 
-        absoluteMode = (byte) 0x03;  // Dont care in protocol
-        id = (byte) 0x11;
-        anglesetData1 = (byte) 0x03;
-        anglesetData0 = (byte) 0xFF;
         angleLimit = new byte[2];
         angleLimit[1] = (byte) 0xFF;
-        angleLimit[0] = (byte) 0xFF;
+        angleLimit[0] = (byte) 0xFF; // set up a 16 bits of data to capture angle set
 
 
-        checkboxkeepAngleCurrentSetting.setOnClickListener(new View.OnClickListener() {
+
+        checkboxKeepAngleCurrentSetting.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (checkboxkeepAngleCurrentSetting.isChecked()) {
+                if (checkboxKeepAngleCurrentSetting.isChecked()) {
                     AngleLimitSeekBar.setEnabled(false);
                 } else {
                     AngleLimitSeekBar.setEnabled(true);
@@ -70,7 +73,7 @@ public class AngleSettingScreen extends AppCompatActivity {
         });
         checkboxKeepAbsoluteMode.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOfSetting(checkboxKeepAbsoluteMode);
+                checkStatusOfCheckbox(checkboxKeepAbsoluteMode);
             }
         });
 
@@ -86,7 +89,7 @@ public class AngleSettingScreen extends AppCompatActivity {
                     absoluteMode = (byte) 0x00; //absolute mode is turned off
                 }
 
-                if (!checkboxkeepAngleCurrentSetting.isChecked()) {
+                if (!checkboxKeepAngleCurrentSetting.isChecked()) {
                      intToByteArray(angleLimit,AngleLimitSeekBar.getProgress());
                 }
 
@@ -95,7 +98,7 @@ public class AngleSettingScreen extends AppCompatActivity {
                  payload.data.setData(2, absoluteMode);
                  payload.data.setData(1, (byte) (anglesetData1 & angleLimit[1]));
                  payload.data.setData(0, (byte) (angleLimit[0] & anglesetData0));
-                CMPPort.getInstance().queueToSend(payload);
+                CMPPort.getInstance().queueToSend(payload); // check to see if a message port has already been called
 
 
 
@@ -114,7 +117,7 @@ public class AngleSettingScreen extends AppCompatActivity {
 
     }
 
-    public void CheckMySeekBar(final SeekBar mSeekBar) {
+    public void checkMySeekBar(final SeekBar mSeekBar) {
 
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -138,7 +141,7 @@ public class AngleSettingScreen extends AppCompatActivity {
     }
 
 
-    public void CheckStatusOfSetting(CheckBox mcheckbox)
+    public void checkStatusOfCheckbox(CheckBox mcheckbox)
     {
 
         if (mcheckbox.isChecked())

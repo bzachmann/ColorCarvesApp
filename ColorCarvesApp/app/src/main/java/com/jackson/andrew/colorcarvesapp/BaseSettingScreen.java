@@ -3,32 +3,30 @@ package com.jackson.andrew.colorcarvesapp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class BaseSettingScreen extends AppCompatActivity {
 
     private Button BaseSettingConfirm;
     private Button BaseSettingCancel;
-    private CheckBox KeepBrightness;
-    private CheckBox KeepOffset;
+    private CheckBox checkboxKeepBrightness;
+    private CheckBox checkboxKeepOffset;
     private SeekBar BrightnessSeekbar;
     private SeekBar OffsetSeekbar;
     private TextView BrightnessDisplay;
     private TextView OffsetDisplay;
-    private Payload PayloadOfMessage;
+    private Payload payload;
     private byte UnifBright1 = (byte)0xFC; //Set to top 6 bits of data1
     private byte UnifBright2 = (byte)0x0F; //Set to bottom 4 bits of data2
-    private byte id = (byte)0x14; //Set to ID of basesetting
+    private byte id = (byte)0x14; //Set to ID of basesetting message
     private byte UnifOffset0 = (byte)(0xFF); //data0
     private byte UnifOffset1 = (byte)(0x03); //Set to bottom 2 bits of data1
-    private byte[] ByteKeepCurrentBrightness;
-    private byte [] ByteKeepCurrentOffset;
+    private byte[] ByteKeepCurrentBrightness; // used to capture brightness setting from user
+    private byte [] ByteKeepCurrentOffset; // captures offset of user
 
 
 
@@ -39,15 +37,15 @@ public class BaseSettingScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base_setting_screen);
 
-        KeepBrightness = (CheckBox) findViewById(R.id.KeepBrightnessSetting);
-        KeepOffset = (CheckBox) findViewById(R.id.KeepOffsetSetting);
+        checkboxKeepBrightness = (CheckBox) findViewById(R.id.KeepBrightnessSetting);
+        checkboxKeepOffset = (CheckBox) findViewById(R.id.KeepOffsetSetting);
         BaseSettingConfirm = (Button) findViewById(R.id.BaseSettingConfirm);
         BaseSettingCancel = (Button) findViewById(R.id.BaseSettingCancel);
         BrightnessSeekbar = (SeekBar) findViewById(R.id.BrightnessSeekbar);
         OffsetSeekbar = (SeekBar) findViewById(R.id.OffsetSeekbar);
         BrightnessDisplay = (TextView) findViewById(R.id.BrightnessDisplay);
         OffsetDisplay= (TextView) findViewById(R.id.OffsetDisplay);
-        PayloadOfMessage = new Payload();
+        payload = new Payload();
 
 
 
@@ -55,8 +53,8 @@ public class BaseSettingScreen extends AppCompatActivity {
         BrightnessSeekbar.setEnabled(false); // Seekbar is not available unless checkbox is unchecked
         OffsetSeekbar.setEnabled(false); // checkbox must be unchecked
 
-        CheckBrightnessSeekbar(BrightnessSeekbar);
-        CheckOffsetSeekbar(OffsetSeekbar);
+        checkBrightnessSeekbar(BrightnessSeekbar);
+        checkOffsetSeekbar(OffsetSeekbar);
 
 
         BaseSettingConfirm.setOnClickListener(new View.OnClickListener() {
@@ -65,12 +63,12 @@ public class BaseSettingScreen extends AppCompatActivity {
                 ByteKeepCurrentBrightness = new byte[2];
 
 
-                if(!KeepBrightness.isChecked()) //Brightness has changed
+                if(!checkboxKeepBrightness.isChecked()) //Brightness has changed
                 {
                      intToByteArray(ByteKeepCurrentBrightness,BrightnessSeekbar.getProgress()); //from 0 - 100 to 0 - 700
 
                 }
-                if(!KeepOffset.isChecked())
+                if(!checkboxKeepOffset.isChecked())
                 {
                      intToByteArray(ByteKeepCurrentOffset,OffsetSeekbar.getProgress());
                 }
@@ -78,7 +76,7 @@ public class BaseSettingScreen extends AppCompatActivity {
 
 
 
-                if(KeepBrightness.isChecked())
+                if(checkboxKeepBrightness.isChecked())
                 {
                     ByteKeepCurrentBrightness[0] = (byte)0xFF;
                     ByteKeepCurrentBrightness[1] = (byte)0xFF;
@@ -86,18 +84,18 @@ public class BaseSettingScreen extends AppCompatActivity {
 
 
 
-                if(KeepOffset.isChecked())
+                if(checkboxKeepOffset.isChecked())
                 {
                     ByteKeepCurrentOffset[0] = (byte)0xFF;
                     ByteKeepCurrentOffset[1] = (byte)0xFF;
                 }
 
                 byte tempByte =  ByteKeepCurrentBrightness[0]; // allows for shifting without losing data
-                PayloadOfMessage.id.setId(id);
-                PayloadOfMessage.data.setData(2,(byte)((ByteKeepCurrentBrightness[1] << 2) + (tempByte >> 6  & UnifBright2)));  //bits of bright[1] shifted to 3 and 4 of data. temp byte takes top 2 bits from bright[0] moves them to bits 1 and 2 of data
-                PayloadOfMessage.data.setData(1,(byte)(((ByteKeepCurrentBrightness[0] << 2) & UnifBright1)+((ByteKeepCurrentOffset[1]  & UnifOffset1))));  //bits 6-1 of brightness and bits 10,9 of offset
-                PayloadOfMessage.data.setData(0,(byte)(ByteKeepCurrentOffset[0] & UnifOffset0));
-                CMPPort.getInstance().queueToSend(PayloadOfMessage); // Payload to message queue
+                payload.id.setId(id);
+                payload.data.setData(2,(byte)((ByteKeepCurrentBrightness[1] << 2) + (tempByte >> 6  & UnifBright2)));  //bits of bright[1] shifted to 3 and 4 of data. temp byte takes top 2 bits from bright[0] moves them to bits 1 and 2 of data
+                payload.data.setData(1,(byte)(((ByteKeepCurrentBrightness[0] << 2) & UnifBright1)+((ByteKeepCurrentOffset[1]  & UnifOffset1))));  //bits 6-1 of brightness and bits 10,9 of offset
+                payload.data.setData(0,(byte)(ByteKeepCurrentOffset[0] & UnifOffset0));
+                CMPPort.getInstance().queueToSend(payload); // Payload to message queue
 
 
 
@@ -115,15 +113,15 @@ public class BaseSettingScreen extends AppCompatActivity {
         });
 
 
-        KeepBrightness.setOnClickListener(new View.OnClickListener() {
+        checkboxKeepBrightness.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOfBrightness(KeepBrightness);
+                checkStatusOfBrightnessCheckbox(checkboxKeepBrightness);
             }
         });
 
-        KeepOffset.setOnClickListener(new View.OnClickListener() {
+        checkboxKeepOffset.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CheckStatusOfOffset(KeepOffset);
+                checkStatusOfOffsetCheckbox(checkboxKeepOffset);
             }
         });
 
@@ -143,14 +141,14 @@ public class BaseSettingScreen extends AppCompatActivity {
 
     }
 
-    public void DisplayBrightness(int Brightness) {
+    public void displayBrightness(int Brightness) {
 
         double tempBrightness = Brightness/7.65; //Convert from 765 to 0-100%
 
         BrightnessDisplay.setText(String.valueOf(tempBrightness + "%"));
     }
 
-    public void DisplayOffset (int offset){
+    public void displayOffset(int offset){
 
         OffsetDisplay.setText(String.valueOf(offset));
     }
@@ -158,7 +156,7 @@ public class BaseSettingScreen extends AppCompatActivity {
 
 
 
-    public void CheckBrightnessSeekbar(final SeekBar mSeekBar) {
+    public void checkBrightnessSeekbar(final SeekBar mSeekBar) {
 
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -178,13 +176,13 @@ public class BaseSettingScreen extends AppCompatActivity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                DisplayBrightness(mSeekBar.getProgress());
+                displayBrightness(mSeekBar.getProgress());
             }
         });
     }
 
 
-    public void CheckOffsetSeekbar(final SeekBar mSeekBar) {
+    public void checkOffsetSeekbar(final SeekBar mSeekBar) {
 
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -204,28 +202,28 @@ public class BaseSettingScreen extends AppCompatActivity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                DisplayOffset(mSeekBar.getProgress());
+                displayOffset(mSeekBar.getProgress());
             }
         });
     }
 
-    public void CheckStatusOfBrightness(CheckBox mcheckbox){
+    public void checkStatusOfBrightnessCheckbox(CheckBox mcheckbox){
 
         if (mcheckbox.isChecked()){
 
             BrightnessSeekbar.setEnabled(false);
         }
         else{
-            BrightnessSeekbar.setEnabled(true);
+            BrightnessSeekbar.setEnabled(true); // Only enable brightness if keepbrightness is not checked
         }
     }
 
-    public void CheckStatusOfOffset(CheckBox mcheckbox){
+    public void checkStatusOfOffsetCheckbox(CheckBox mcheckbox){
         if(mcheckbox.isChecked()){
             OffsetSeekbar.setEnabled(false);
         }
         else{
-            OffsetSeekbar.setEnabled(true);
+            OffsetSeekbar.setEnabled(true); // Only enable offset change if keepoffset is not checked
         }
     }
 
