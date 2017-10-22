@@ -55,20 +55,20 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
                 if(!checkboxKeepMinSpeed.isChecked())
                 {
-                    if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
-                    {
-                        doubleToByteArray(byteMinSpeed, getSpeedSetting(MinSpeedDisplay));  //Get value from numpad and send it to a byte
+                    //if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
+                    //{
+                        doubleToByte(byteMinSpeed, getSpeedSetting(MinSpeedDisplay));  //Get value from numpad and send it to a byte
 
-                    }
+                    //}
                 }
 
                 if(!checkboxKeepMaxSpeed.isChecked())
                 {
-                    if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
-                    {
-                        doubleToByteArray(byteMaxSpeed, getSpeedSetting(MaxSpeedDisplay));  //Get value from numpad and send it to a byte
+                    //if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
+                    //{
+                        doubleToByte(byteMaxSpeed, getSpeedSetting(MaxSpeedDisplay));  //Get value from numpad and send it to a byte
 
-                    }
+                   // }
 
                 }
 
@@ -191,9 +191,10 @@ public class SpeedSettingScreen extends AppCompatActivity {
     }
 
 
-    public void doubleToByteArray(byte val, double data)
+    public void doubleToByte(byte val, double data)
     {
-        val = (byte)data;
+        val = (byte)((int)data);
+
 
     }
 

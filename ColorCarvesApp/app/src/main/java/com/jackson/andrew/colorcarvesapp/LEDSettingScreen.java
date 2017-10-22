@@ -92,7 +92,7 @@ public class LEDSettingScreen extends AppCompatActivity{
 
                 payloadOfMessage.id.setId(id);
                 payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) + (offsetOfLed[1] & ledOffsetData1)));
+                payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
                 payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
                 CMPPort.getInstance().queueToSend(payloadOfMessage);
 

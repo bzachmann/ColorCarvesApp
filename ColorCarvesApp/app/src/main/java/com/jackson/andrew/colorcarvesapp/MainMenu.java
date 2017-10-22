@@ -54,6 +54,7 @@ public class MainMenu extends AppCompatActivity{
     private Button ToBoardSpecs;
     private Button ToBaseSetting;
     private Button ToEnableOptions;
+    private Button ToCustomLED;
     private TextView DeviceAdressDisplay;
 
     private static MainMenu mm;
@@ -149,6 +150,7 @@ public class MainMenu extends AppCompatActivity{
         ToBoardSpecs = (Button) findViewById(R.id.ToBoardSpecs);
         ToEnableOptions = (Button) findViewById(R.id.ToEnableOptions);
         DeviceAdressDisplay=(TextView)findViewById(R.id.DeviceAddressDisplay);
+        ToCustomLED = (Button) findViewById(R.id.toCustomLED);
 
         if(mConnected)
         {
@@ -207,6 +209,13 @@ public class MainMenu extends AppCompatActivity{
             public void onClick(View v) {
 
                 GoToBaseSetting();
+            }
+        });
+
+        ToCustomLED.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                GoToCustomLED();
             }
         });
     }
@@ -291,6 +300,14 @@ public class MainMenu extends AppCompatActivity{
 
     public void GoToEnableSetting(){
         Intent myIntent = new Intent(MainMenu.this, EnableOptionsSettingScreen.class);
+        myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+        MainMenu.this.startActivity(myIntent);
+
+    }
+
+    public void GoToCustomLED(){
+        Intent myIntent = new Intent(MainMenu.this, CustomLED.class);
         myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
         MainMenu.this.startActivity(myIntent);
