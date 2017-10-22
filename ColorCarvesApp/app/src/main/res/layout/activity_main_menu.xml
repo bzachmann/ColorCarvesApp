@@ -136,8 +136,9 @@
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
         app:layout_constraintRight_toRightOf="@+id/ToBaseSettingScreen"
-        android:layout_marginTop="21dp"
+        android:layout_marginTop="239dp"
         app:layout_constraintTop_toBottomOf="@+id/ToBaseSettingScreen"
         tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="@+id/ToBaseSettingScreen" />
+        app:layout_constraintLeft_toLeftOf="@+id/ToBaseSettingScreen"
+        app:layout_constraintHorizontal_bias="0.0" />
 </android.support.constraint.ConstraintLayout>
