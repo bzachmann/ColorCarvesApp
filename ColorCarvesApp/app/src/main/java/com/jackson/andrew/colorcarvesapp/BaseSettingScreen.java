@@ -95,7 +95,7 @@ public class BaseSettingScreen extends AppCompatActivity {
                 payload.data.setData(2,(byte)(((ByteKeepCurrentBrightness[1] << 2) | (tempByte >> 6))  & UnifBright2));  //bits of bright[1] shifted to 3 and 4 of data. temp byte takes top 2 bits from bright[0] moves them to bits 1 and 2 of data
                 payload.data.setData(1,(byte)((((ByteKeepCurrentBrightness[0] << 2) & UnifBright1))|(ByteKeepCurrentOffset[1]  & UnifOffset1)));  //bits 6-1 of brightness and bits 10,9 of offset
                 payload.data.setData(0,(byte)(ByteKeepCurrentOffset[0] & UnifOffset0));
-                CMPPort.getInstance().queueToSend(payload); // Payload to message queue
+                CMPPortTx.getInstance().queueToSend(payload); // Payload to message queue
 
 
 
@@ -145,7 +145,9 @@ public class BaseSettingScreen extends AppCompatActivity {
 
         double tempBrightness = Brightness/7.65; //Convert from 765 to 0-100%
 
-        BrightnessDisplay.setText(String.valueOf(tempBrightness + "%"));
+
+
+        BrightnessDisplay.setText(String.valueOf(((int)(tempBrightness) ) + "%")); //Int casting to display % as int
     }
 
     public void displayOffset(int offset){

@@ -9,11 +9,11 @@ import java.nio.ByteBuffer;
 public class Message {
 
     private byte header = (byte)0xE1;
-    public Payload payload;
+    public Payload payload = new Payload();
 
     Message()
     {
-        header = (byte)0xE1;
+
     }
 
     public void setHeader(byte value)

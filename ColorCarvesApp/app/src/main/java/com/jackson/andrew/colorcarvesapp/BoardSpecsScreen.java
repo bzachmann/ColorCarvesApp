@@ -3,7 +3,6 @@ package com.jackson.andrew.colorcarvesapp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -82,7 +81,7 @@ public class BoardSpecsScreen extends AppCompatActivity {
                 payload.data.setData(2,(byte)(data2 & byteWheelDiam));
                 payload.data.setData(1, (byte)(data1 & ledSpacing[1]));
                 payload.data.setData(0,(byte)(data0 & ledSpacing[0]));
-                CMPPort.getInstance().queueToSend(payload);
+                CMPPortTx.getInstance().queueToSend(payload);
                 ReturnToMainMenu();
             }
         });

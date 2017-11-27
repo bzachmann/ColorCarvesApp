@@ -94,7 +94,7 @@ public class LEDSettingScreen extends AppCompatActivity{
                 payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
                 payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
                 payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                CMPPort.getInstance().queueToSend(payloadOfMessage);
+                CMPPortTx.getInstance().queueToSend(payloadOfMessage);
 
 
 
@@ -298,7 +298,7 @@ public class LEDSettingScreen extends AppCompatActivity{
     {
 
         String tempColor = String.valueOf(data);
-        Log.d("AndysMessage", tempColor);
+
         val[0] = (byte)(data);  //discards all but bottom 8 bits of val
         val[1] = (byte)((data >> 8 )); // takes val and discards bottom 8 bits.
 
