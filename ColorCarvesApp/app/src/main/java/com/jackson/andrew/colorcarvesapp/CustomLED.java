@@ -17,6 +17,8 @@ public class CustomLED extends AppCompatActivity {
     private CheckBox setFirstHalfLEDs;
     private CheckBox setSecondHalfLEDs;
     private CheckBox setRainbowLEDs;
+    private CheckBox keepLEDState;
+    private CheckBox LEDState;
     private Button displayLEDColor;
     private Button customLEDConfirm;
     private Button customLEDCancel;
@@ -24,7 +26,7 @@ public class CustomLED extends AppCompatActivity {
     private byte Red;
     private byte Blue;
     private byte Green;
-    private int totalLEDS = 33; //LEDS on Longboard
+    private int totalLEDS = 30; //LEDS on Longboard
     private int ConvertedColor;
     private byte stateOfLed;
     private byte indexOfLed;
@@ -49,11 +51,18 @@ public class CustomLED extends AppCompatActivity {
         setFirstHalfLEDs = (CheckBox) findViewById(R.id.FirstHalfLED);
         setRainbowLEDs = (CheckBox) findViewById(R.id.RainbowLED);
         setSecondHalfLEDs = (CheckBox) findViewById(R.id.SecondHalfLED);
+        keepLEDState = (CheckBox) findViewById(R.id.KeepLEDState);
+        LEDState = (CheckBox) findViewById(R.id.LEDState);
         seekBarLEDColor = (SeekBar) findViewById(R.id.LEDColor);
         displayLEDColor = (Button) findViewById(R.id.DisplayLED);
         customLEDConfirm = (Button) findViewById(R.id.CustomLEDConfirm);
         customLEDCancel = (Button) findViewById(R.id.CustomLEDCancel);
         displayLEDColor.setBackgroundColor(getConvertedColor());
+        stateOfLed = (byte)(0x11); //Initial state is dont care in protocol
+        indexOfLed = (byte)(0xFF); //Initial state is led 0
+        offsetOfLed = new byte[2];
+        offsetOfLed[1] = (byte)(0x03); //MSB 10 and 9 set to 0
+        offsetOfLed[0] = (byte)(0xFF);// LS byte  of offset
 
 
 
@@ -63,28 +72,50 @@ public class CustomLED extends AppCompatActivity {
 
         customLEDConfirm.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                stateOfLed = (byte)(0x11); //Initial state is dont care in protocol
-                indexOfLed = (byte)(0xFF); //Initial state is led 0
-                offsetOfLed = new byte[2];
-                offsetOfLed[1] = (byte)0x03; //MSB 10 and 9 set to 0
-                offsetOfLed[0] = (byte)0xFF;// LS byte  of offset
 
+                if(keepLEDState.isChecked())
+                {
+                    stateOfLed = (byte)0x11;
+                }
+                if(LEDState.isChecked() & !keepLEDState.isChecked())
+                {
+                    stateOfLed = (byte)0x01;
+                }
+                if(!LEDState.isChecked() & !keepLEDState.isChecked())
+                {
+                    stateOfLed = (byte)0x00;
+                }
 
 
 
                 if(setOddLEDS.isChecked())
                 {
 
+
+
                     intToByteArray(offsetOfLed,seekBarLEDColor.getProgress()); //get color selected
-                    for(int x =1; x< totalLEDS; x += 2)
+                    for(int x = 1; x < totalLEDS; x += 2)
                     {
-                        indexOfLed = (byte)x; //Set to odd
+                        payloadOfMessage = new Payload();
+                        indexOfLed = (byte)(((byte)x) & 0xFF); //Set to odd
 
                         payloadOfMessage.id.setId(id);
-                        payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
+                        payloadOfMessage.data.setData(2,(stateOfLed));
+                        payloadOfMessage.data.setData(1, (byte)(((indexOfLed << 2) & ledIndexData1) | (offsetOfLed[1] & ledOffsetData1)));
                         payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                        CMPPort.getInstance().queueToSend(payloadOfMessage);
+
+                        final StringBuilder builder1 = new StringBuilder();
+
+
+                        builder1.append(String.format("%02x", payloadOfMessage.id.getId()));
+                        builder1.append(String.format("%02x", payloadOfMessage.data.getByte(2)));
+                        builder1.append(String.format("%02x", payloadOfMessage.data.getByte(1)));
+                        builder1.append(String.format("%02x", payloadOfMessage.data.getByte(0)));
+
+
+                        Log.d("Byte Custom Message", builder1.toString());
+                        CMPPortTx.getInstance().queueToSend(payloadOfMessage);
+
                     }
                 }
 
@@ -92,15 +123,27 @@ public class CustomLED extends AppCompatActivity {
                 {
 
                     intToByteArray(offsetOfLed,seekBarLEDColor.getProgress()); //get color selected
-                    for(int x =0; x< totalLEDS; x += 2)
+                    for(int x = 0; x < totalLEDS; x += 2)
                     {
-                        indexOfLed = (byte)x; //Set to even
+
+                        payloadOfMessage = new Payload();
+                        indexOfLed = (byte)(((byte)x) & 0xFF); //Set to even
 
                         payloadOfMessage.id.setId(id);
                         payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
+                        payloadOfMessage.data.setData(1, (byte)(((indexOfLed << 2) & ledIndexData1) | (offsetOfLed[1] & ledOffsetData1)));
                         payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                        CMPPort.getInstance().queueToSend(payloadOfMessage);
+                        final StringBuilder builder = new StringBuilder();
+
+
+                        builder.append(String.format("%02x", payloadOfMessage.id.getId()));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(2)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(1)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(0)));
+
+
+                        Log.d("Byte Custom Message", builder.toString());
+                        CMPPortTx.getInstance().queueToSend(payloadOfMessage);
                     }
                 }
 
@@ -108,48 +151,84 @@ public class CustomLED extends AppCompatActivity {
                 {
 
                     intToByteArray(offsetOfLed,seekBarLEDColor.getProgress()); //get color selected
-                    for(int x =0; x< totalLEDS/2 + 1; x ++)
-                    {
-                        indexOfLed = (byte)x; //Set to first half
+                    for(int x =0; x< totalLEDS/2; x ++) {
+                        payloadOfMessage = new Payload();
+                        indexOfLed = (byte) (((byte) x) & 0xFF); //Set to first half
 
                         payloadOfMessage.id.setId(id);
-                        payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
-                        payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                        CMPPort.getInstance().queueToSend(payloadOfMessage);
+                        payloadOfMessage.data.setData(2, (byte) (stateOfLed & ledStateData2));
+                        payloadOfMessage.data.setData(1, (byte) ((indexOfLed << 2 & ledIndexData1) | (offsetOfLed[1] & ledOffsetData1)));
+                        payloadOfMessage.data.setData(0, (byte) (offsetOfLed[0] & ledOffsetData0));
+
+                        final StringBuilder builder = new StringBuilder();
+
+
+                        builder.append(String.format("%02x", payloadOfMessage.id.getId()));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(2)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(1)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(0)));
+
+
+                        Log.d("Byte Custom Message", builder.toString());
+
+                        CMPPortTx.getInstance().queueToSend(payloadOfMessage);
                     }
                 }
                 if(setSecondHalfLEDs.isChecked())
                 {
 
                     intToByteArray(offsetOfLed,seekBarLEDColor.getProgress()); //get color selected
-                    for(int x =totalLEDS/2 + 2; x< totalLEDS; x ++)
+
+                    for(int x =totalLEDS/2; x< totalLEDS; x ++)
                     {
-                        indexOfLed = (byte)x; //Set to second half
+                        payloadOfMessage = new Payload();
+                        indexOfLed = (byte)(((byte)x) & 0xFF); //Set to second half
 
                         payloadOfMessage.id.setId(id);
                         payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
+                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2 & ledIndexData1) | (offsetOfLed[1] & ledOffsetData1)));
                         payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                        CMPPort.getInstance().queueToSend(payloadOfMessage);
+                        final StringBuilder builder = new StringBuilder();
+
+
+                        builder.append(String.format("%02x", payloadOfMessage.id.getId()));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(2)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(1)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(0)));
+
+
+                        Log.d("Byte Custom Message", builder.toString());
+                        CMPPortTx.getInstance().queueToSend(payloadOfMessage);
                     }
                 }
                 if(setRainbowLEDs.isChecked())
                 {
-                    int tempcolor = totalLEDS/765;
+
 
 
                     for(int x =0; x< totalLEDS; x ++)
                     {
-                        indexOfLed = (byte)x; //all LEDs
-                        offsetOfLed[0] = (byte)(tempcolor*x);
-                        offsetOfLed[1] = (byte)((tempcolor*x) >> 8);
+                        payloadOfMessage = new Payload();
+                        int ConstantChange =((765 / totalLEDS) * x);
+                        indexOfLed = (byte)(((byte)x) & 0xFF); //all LEDs
+                        offsetOfLed[0] = (byte)(ConstantChange);
+                        offsetOfLed[1] = (byte)((ConstantChange) >> 8);
 
                         payloadOfMessage.id.setId(id);
                         payloadOfMessage.data.setData(2,(byte)(stateOfLed & ledStateData2));
-                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2) | (offsetOfLed[1] & ledOffsetData1)));
+                        payloadOfMessage.data.setData(1, (byte)((indexOfLed << 2 & ledIndexData1) | (offsetOfLed[1] & ledOffsetData1)));
                         payloadOfMessage.data.setData(0, (byte)(offsetOfLed[0] & ledOffsetData0));
-                        CMPPort.getInstance().queueToSend(payloadOfMessage);
+                        final StringBuilder builder = new StringBuilder();
+
+
+                        builder.append(String.format("%02x", payloadOfMessage.id.getId()));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(2)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(1)));
+                        builder.append(String.format("%02x", payloadOfMessage.data.getByte(0)));
+
+
+                        Log.d("Byte Custom Message", builder.toString());
+                        CMPPortTx.getInstance().queueToSend(payloadOfMessage);
                     }
                 }
 
@@ -194,6 +273,27 @@ public class CustomLED extends AppCompatActivity {
                 CheckStatusOfCheckboxes(setOddLEDS,setEvenLEDs,setRainbowLEDs,setFirstHalfLEDs,setSecondHalfLEDs);
             }
         });
+
+        keepLEDState.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                if(keepLEDState.isChecked())
+                {
+                    LEDState.setEnabled(false);
+                }
+                if(!keepLEDState.isChecked())
+                {
+                    LEDState.setEnabled(true);
+                }
+            }
+        });
+
+        LEDState.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+        }});
+
+
 
 
 
@@ -293,7 +393,16 @@ public class CustomLED extends AppCompatActivity {
     }
 
 
-    public void CheckStatusOfCheckboxes(CheckBox Odd, CheckBox Even, CheckBox Rainbow, CheckBox FirstHalf, CheckBox SecondHalf ){
+    public void CheckStatusOfCheckboxes(CheckBox Odd, CheckBox Even, CheckBox Rainbow, CheckBox FirstHalf, CheckBox SecondHalf )
+    {
+        if(!Odd.isChecked() & !Even.isChecked() & !Rainbow.isChecked() & !FirstHalf.isChecked() & !SecondHalf.isChecked())
+        {
+            setFirstHalfLEDs.setEnabled(true);
+            setEvenLEDs.setEnabled(true);
+            setRainbowLEDs.setEnabled(true);
+            setSecondHalfLEDs.setEnabled(true);
+            setOddLEDS.setEnabled(true);
+        }
 
         if(Odd.isChecked()){
 
@@ -302,7 +411,11 @@ public class CustomLED extends AppCompatActivity {
             setEvenLEDs.setEnabled(false);
             setRainbowLEDs.setEnabled(false);
             setSecondHalfLEDs.setEnabled(false);
+
+
         }
+
+
         if(Even.isChecked()){
 
             setFirstHalfLEDs.setEnabled(false);
@@ -310,6 +423,7 @@ public class CustomLED extends AppCompatActivity {
             setRainbowLEDs.setEnabled(false);
             setSecondHalfLEDs.setEnabled(false);
         }
+
         if(Rainbow.isChecked()){
 
             setFirstHalfLEDs.setEnabled(false);
@@ -317,6 +431,7 @@ public class CustomLED extends AppCompatActivity {
             setOddLEDS.setEnabled(false);
             setSecondHalfLEDs.setEnabled(false);
         }
+
         if(FirstHalf.isChecked()){
 
             setOddLEDS.setEnabled(false);
@@ -324,13 +439,14 @@ public class CustomLED extends AppCompatActivity {
             setRainbowLEDs.setEnabled(false);
             setSecondHalfLEDs.setEnabled(false);
         }
+
         if(SecondHalf.isChecked()){
             setFirstHalfLEDs.setEnabled(false);
             setEvenLEDs.setEnabled(false);
             setRainbowLEDs.setEnabled(false);
             setOddLEDS.setEnabled(false);
-
         }
+
 
 
     }
