@@ -98,7 +98,7 @@ public class AngleSettingScreen extends AppCompatActivity {
                  payload.data.setData(2, absoluteMode);
                  payload.data.setData(1, (byte) (anglesetData1 & angleLimit[1]));
                  payload.data.setData(0, (byte) (angleLimit[0] & anglesetData0));
-                CMPPort.getInstance().queueToSend(payload); // check to see if a message port has already been called
+                CMPPortTx.getInstance().queueToSend(payload); // check to see if a message port has already been called
 
 
 
