@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.nfc.Tag;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,10 +53,12 @@ public class MainMenu extends AppCompatActivity{
     private Button ToBaseSetting;
     private Button ToEnableOptions;
     private Button ToCustomLED;
+    private Button ToRunDisplay;
     private TextView DeviceAdressDisplay;
 
     private static MainMenu mm;
     private CommThread BackgroundThread;
+    private ReadThread readBackgroundThread;
 
     public static final String DEVICE_NAME = "DEVICE_NAME";
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -151,6 +151,19 @@ public class MainMenu extends AppCompatActivity{
         ToEnableOptions = (Button) findViewById(R.id.ToEnableOptions);
         DeviceAdressDisplay=(TextView)findViewById(R.id.DeviceAddressDisplay);
         ToCustomLED = (Button) findViewById(R.id.toCustomLED);
+        ToRunDisplay = (Button) findViewById(R.id.RunDisplay);
+
+
+
+
+
+        CMPPortRx.getInstance().init();
+        RunDisplay.getInstance();
+        CMPPayloadHandler.getInstance().init();
+        SpeedandTiltMessageHandler.getInstance().init();
+        startBackgroundThread();
+
+
 
         if(mConnected)
         {
@@ -162,7 +175,7 @@ public class MainMenu extends AppCompatActivity{
         }
 
 
-        startBackgroundThread();
+
 
 
 
@@ -216,6 +229,12 @@ public class MainMenu extends AppCompatActivity{
             public void onClick(View v) {
 
                 GoToCustomLED();
+            }
+        });
+        ToRunDisplay.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                readMessageOverBLE();
+                GoToRunDisplay();
             }
         });
     }
@@ -308,6 +327,13 @@ public class MainMenu extends AppCompatActivity{
 
     public void GoToCustomLED(){
         Intent myIntent = new Intent(MainMenu.this, CustomLED.class);
+        myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+        MainMenu.this.startActivity(myIntent);
+
+    }
+    public void GoToRunDisplay(){
+        Intent myIntent = new Intent(MainMenu.this, RunDisplay.class);
         myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
         MainMenu.this.startActivity(myIntent);
@@ -460,14 +486,33 @@ public class MainMenu extends AppCompatActivity{
 
         if (mConnected)
         {
-            characteristicTX.setValue(userMessage);
+            characteristicTX.setValue(temp);
             Log.d("Send MEssage Over BLE", userMessage.toString());
             mBluetoothLeService.writeCharacteristic(characteristicTX);
-            mBluetoothLeService.setCharacteristicNotification(characteristicRX, true);
+            mBluetoothLeService.setCharacteristicNotification(characteristicTX, true);
+           // mBluetoothLeService.setCharacteristicNotification(characteristicRX,true);
 
 
         }
     }
+
+    public void readMessageOverBLE ()
+    {
+
+
+if(mConnected)
+{
+
+
+    mBluetoothLeService.readCharacteristic(characteristicRX);
+    mBluetoothLeService.setCharacteristicNotification(characteristicRX, true);
+
+}
+
+
+    }
+
+
 
     public static synchronized MainMenu getInstance()
     {
@@ -480,9 +525,13 @@ public class MainMenu extends AppCompatActivity{
     }
 
     private void startBackgroundThread() {
-        BackgroundThread = new CommThread(CMPPort.getInstance()); // Pass the Queue to the thread
+        BackgroundThread = new CommThread(CMPPortTx.getInstance()); // Pass the Queue to the thread
         BackgroundThread.start();
-        Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
+
+        readBackgroundThread = new ReadThread(RunDisplay.getInstance());
+        readBackgroundThread.start();
+
+        //Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
 
     }
 

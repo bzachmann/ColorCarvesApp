@@ -47,7 +47,7 @@
 
     <CheckBox
         android:id="@+id/EvenLED"
-        android:layout_width="139dp"
+        android:layout_width="0dp"
         android:layout_height="34dp"
         android:layout_marginTop="66dp"
         android:text="Set Even LED"
@@ -121,4 +121,31 @@
         tools:layout_constraintLeft_creator="1"
         android:layout_marginBottom="40dp"
         app:layout_constraintLeft_toLeftOf="parent" />
+
+    <CheckBox
+        android:id="@+id/KeepLEDState"
+        android:layout_width="0dp"
+        android:layout_height="34dp"
+        android:text="Keep LED State"
+        android:checked="true"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/SecondHalfLED"
+        app:layout_constraintTop_toBottomOf="@+id/SecondHalfLED"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/SecondHalfLED" />
+
+    <CheckBox
+        android:id="@+id/LEDState"
+        android:layout_width="0dp"
+        android:layout_height="34dp"
+        android:text="LED State"
+        android:checked="true"
+        android:enabled="false"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/KeepLEDState"
+        app:layout_constraintTop_toBottomOf="@+id/KeepLEDState"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/KeepLEDState" />
 </android.support.constraint.ConstraintLayout>

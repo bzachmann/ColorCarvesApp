@@ -8,14 +8,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class SpeedSettingScreen extends AppCompatActivity {
 
     private Button SpeedConfirm;
     private Button SpeedCancel;
-    private EditText MinSpeedDisplay;
-    private EditText MaxSpeedDisplay;
+    private TextView MinSpeedDisplay;
+    private TextView MaxSpeedDisplay;
     private CheckBox checkboxKeepMinSpeed;
     private CheckBox checkboxKeepMaxSpeed;
     private double DefaultMinSpeed =0;       //Default speed
@@ -27,6 +28,8 @@ public class SpeedSettingScreen extends AppCompatActivity {
     private byte byteMinSpeed = (byte)0x00; //default of min speed
     private byte byteMaxSpeed = (byte)0x7F; // default of max speed
     private Payload payload;
+    private SeekBar seekBarMinSpeed;
+    private SeekBar seekBarMaxSpeed;
 
 
     @Override
@@ -36,16 +39,27 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
         SpeedConfirm = (Button) findViewById(R.id.SpeedConfirm);
         SpeedCancel = (Button) findViewById(R.id.SpeedCancel);
-        MinSpeedDisplay = (EditText) findViewById(R.id.MinSpeedDisplay);
-        MaxSpeedDisplay = (EditText) findViewById(R.id.MaxSpeedDisaplay);
+        MinSpeedDisplay = (TextView) findViewById(R.id.MinSpeedDisplay);
+        MaxSpeedDisplay = (TextView) findViewById(R.id.MaxSpeedDisplay);
         checkboxKeepMaxSpeed = (CheckBox) findViewById(R.id.KeepMaxSpeed);
         checkboxKeepMinSpeed =(CheckBox)findViewById(R.id.KeepMinSpeed);
+        seekBarMinSpeed = (SeekBar)findViewById(R.id.seekBarMinSpeed);
+        seekBarMaxSpeed = (SeekBar)findViewById(R.id.seekBarMaxSpeed);
 
         MinSpeedDisplay.setText(String.valueOf(DefaultMinSpeed));
         MaxSpeedDisplay.setText(String.valueOf(DefaultMaxSpeed));
         MinSpeedDisplay.setEnabled(false);
         MaxSpeedDisplay.setEnabled(false);
+        seekBarMinSpeed.setEnabled(false);
+        seekBarMaxSpeed.setEnabled(false);
         payload = new Payload();
+
+
+
+        checkminSeekbar(seekBarMinSpeed);
+        checkmaxSeekbar(seekBarMaxSpeed);
+
+
 
 
 
@@ -55,20 +69,15 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
                 if(!checkboxKeepMinSpeed.isChecked())
                 {
-                    //if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
-                    //{
-                        doubleToByte(byteMinSpeed, getSpeedSetting(MinSpeedDisplay));  //Get value from numpad and send it to a byte
 
-                    //}
+                   byteMinSpeed = (byte)seekBarMinSpeed.getProgress();
+
+
                 }
 
                 if(!checkboxKeepMaxSpeed.isChecked())
                 {
-                    //if (getMaxSpeed() > getMinSpeed())  //valid speed entered min < max
-                    //{
-                        doubleToByte(byteMaxSpeed, getSpeedSetting(MaxSpeedDisplay));  //Get value from numpad and send it to a byte
-
-                   // }
+                    byteMaxSpeed=(byte)seekBarMaxSpeed.getProgress();
 
                 }
 
@@ -76,7 +85,7 @@ public class SpeedSettingScreen extends AppCompatActivity {
                 payload.data.setData(2,data2);
                 payload.data.setData(1,(byte)(data1MaxSpeed & byteMaxSpeed));
                 payload.data.setData(0,(byte)(data0MinSpeed & byteMinSpeed));
-                CMPPort.getInstance().queueToSend(payload);
+                CMPPortTx.getInstance().queueToSend(payload);
                 ReturnToMainMenu();
             }
         });
@@ -106,28 +115,72 @@ public class SpeedSettingScreen extends AppCompatActivity {
         });
 
 
+
+
     }
 
 
 
-    public double getMinSpeed() {   //Grabs Numpad User number to integer value passed to byte array
-        String TempSpeed;
-        TempSpeed = MinSpeedDisplay.getText().toString();
-        double Speed;
-        Speed = Double.parseDouble(TempSpeed);
+    public void checkminSeekbar(final SeekBar mSeekBar) {
 
-                return Speed;
+
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                displayminSpeedSpeed(mSeekBar.getProgress());
+            }
+        });
+    }
+    public void checkmaxSeekbar(final SeekBar mSeekBar) {
+
+
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                displaymaxSpeed(mSeekBar.getProgress());
+            }
+        });
     }
 
-    public double getMaxSpeed(){
-
-        String TempSpeed;
-        TempSpeed = MaxSpeedDisplay.getText().toString();
-        double Speed;
-        Speed = Double.parseDouble(TempSpeed);
-
-        return Speed;
+    public void displayminSpeedSpeed(int progress)
+    {
+        float speed = progress;
+        MinSpeedDisplay.setText(String.valueOf(speed/10) + " m/s");
     }
+
+    public void displaymaxSpeed(int progress)
+    {
+        float speed = progress;
+        MaxSpeedDisplay.setText(String.valueOf(speed/10)+ "m/s");
+    }
+
+
+
+
 
     public void ReturnToMainMenu(){
         Intent myIntent = new Intent(SpeedSettingScreen.this, MainMenu.class);
@@ -140,10 +193,12 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
         if(mCheckbox.isChecked()){
             MinSpeedDisplay.setEnabled(false); //MinSpeed is default value
+            seekBarMinSpeed.setEnabled(false);
 
         }
         else{
             MinSpeedDisplay.setEnabled(true);
+            seekBarMinSpeed.setEnabled(true);
         }
 
     }
@@ -152,48 +207,22 @@ public class SpeedSettingScreen extends AppCompatActivity {
 
         if(mCheckbox.isChecked()){
             MaxSpeedDisplay.setEnabled(false); //MaxSpeed is default value
+            seekBarMaxSpeed.setEnabled(false);
 
         }
         else{
             MaxSpeedDisplay.setEnabled(true);
+            seekBarMaxSpeed.setEnabled(true);
         }
 
     }
 
-    public double getSpeedSetting(TextView displayText) {   //Grabs Numpad User number to integer value passed to byte array
-        String TempIndex;
-        TempIndex = displayText.getText().toString();
-
-        double  retVal = 0;
-
-        try
-        {
-            retVal = Double.parseDouble(TempIndex);
-            retVal = retVal * 10; //convert to 0-126 for byte value of speed
-
-            if(retVal < 0 )
-            {
-                retVal = 0;   //Makes sure valid number was entered on the numpad
-
-            }
-            if(retVal > 127)
-            {
-                retVal = 126; //max speed for long board
-
-            }
-        }
-        catch(Exception e)
-        {
-            retVal = 0;
-        }
-
-        return retVal;
-    }
 
 
-    public void doubleToByte(byte val, double data)
+
+    public void intToByte(byte val, int data)
     {
-        val = (byte)((int)data);
+        val = (byte)(data);
 
 
     }

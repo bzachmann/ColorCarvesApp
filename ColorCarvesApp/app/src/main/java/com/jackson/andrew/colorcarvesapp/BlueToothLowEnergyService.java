@@ -16,6 +16,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +36,8 @@ public class BlueToothLowEnergyService extends Service {
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
+    private Message tempMessage;
+    private byte[] readBytes;
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -103,22 +106,21 @@ public class BlueToothLowEnergyService extends Service {
         sendBroadcast(intent);
     }
 
-    private void broadcastUpdate(final String action,final BluetoothGattCharacteristic characteristic) {
+    private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-
         // For all other profiles, writes the data formatted in HEX.
         final byte[] data = characteristic.getValue();
-        Log.i(TAG, "data"+characteristic.getValue());
 
-        if (data != null && data.length > 0) {
-            final StringBuilder stringBuilder = new StringBuilder(data.length);
-            for(byte byteChar : data)
-                stringBuilder.append(String.format("%02X ", byteChar));
-            Log.d(TAG, String.format("%s", new String(data)));
-            // getting cut off when longer, need to push on new line, 0A
-            intent.putExtra(EXTRA_DATA,String.format("%s", new String(data)));
+        bytesToBuffer(data);
 
-        }
+
+        Log.i("READ", "data" + characteristic.getValue());
+        Log.d("READ", "broadcastUpdate: jdsjsdkjdjsdj");
+
+
+        // getting cut off when longer, need to push on new line, 0A
+          intent.putExtra(EXTRA_DATA, String.format("%s", new String(data)));
+
         sendBroadcast(intent);
     }
 
@@ -173,11 +175,10 @@ public class BlueToothLowEnergyService extends Service {
      * Connects to the GATT server hosted on the Bluetooth LE device.
      *
      * @param address The device address of the destination device.
-     *
      * @return Return true if the connection is initiated successfully. The connection result
-     *         is reported asynchronously through the
-     *         {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
-     *         callback.
+     * is reported asynchronously through the
+     * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
+     * callback.
      */
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {
@@ -257,6 +258,7 @@ public class BlueToothLowEnergyService extends Service {
 
     /**
      * Write to a given char
+     *
      * @param characteristic The characteristic to write to
      */
     public void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
@@ -272,7 +274,7 @@ public class BlueToothLowEnergyService extends Service {
      * Enables or disables notification on a give characteristic.
      *
      * @param characteristic Characteristic to act on.
-     * @param enabled If true, enable notification.  False otherwise.
+     * @param enabled        If true, enable notification.  False otherwise.
      */
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
@@ -296,7 +298,42 @@ public class BlueToothLowEnergyService extends Service {
         return mBluetoothGatt.getServices();
     }
 
+    private void bytesToBuffer(byte[] data) {
 
+        int numberOfMessages = 0;
+        int temp = 1;
+
+        Log.d(TAG, "bytesToBuffer: entered ");
+        final StringBuilder stringBuilder = new StringBuilder(data.length);
+
+        readBytes = new byte[data.length];
+        for (int x = 0; x < data.length; x++) {
+
+            if (data != null & data.length > 0) {
+                readBytes[x] = data[x];
+                stringBuilder.append(String.format("%02X", readBytes[x]));
+
+            }
+
+            if(x*temp == 4)
+            {
+            tempMessage = new Message();
+                tempMessage.setHeader(readBytes[(numberOfMessages) + 0]);
+                tempMessage.payload.id.setId(readBytes[( numberOfMessages) + 1]);
+                tempMessage.payload.data.setData(2,readBytes[( numberOfMessages)+ 2]);
+                tempMessage.payload.data.setData(1,readBytes[( numberOfMessages)+ 3]);
+                tempMessage.payload.data.setData(0,readBytes[( numberOfMessages)+ 4]);
+
+                RunDisplay.getInstance().checkForValidMessage(tempMessage);
+                numberOfMessages +=5;
+                temp++;
+            }
+
+
+        }
+
+        Log.d("READ", stringBuilder.toString());
+    }
 }
 
 

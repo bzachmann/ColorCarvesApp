@@ -83,7 +83,7 @@ public class EnableOptionsSettingScreen extends AppCompatActivity {
                 payload.data.setData(2, data2Pattern); // will and with pattern later
                 payload.data.setData(1,(byte)(data1Brightness + data1Offset)); //will and with bright and offset later
                 payload.data.setData(0, (byte)((data0Pattern & bytePatternOn)+(data0Bright & byteBrightOn)+ (data0Offset & byteOffsetOn)));
-                CMPPort.getInstance().queueToSend(payload); //send to queue
+                CMPPortTx.getInstance().queueToSend(payload); //send to queue
 
                 ReturnToMainMenu();
             }

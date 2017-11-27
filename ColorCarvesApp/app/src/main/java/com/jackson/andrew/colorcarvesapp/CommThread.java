@@ -1,9 +1,5 @@
 package com.jackson.andrew.colorcarvesapp;
 
-import java.nio.ByteBuffer;
-import java.security.Timestamp;
-import java.util.concurrent.BlockingQueue;
-
 /**
  * Created by User on 9/8/2017.
  */
@@ -11,15 +7,12 @@ import java.util.concurrent.BlockingQueue;
 public class CommThread extends Thread {
 
     private static final String MY_BACKGROUND_THREAD = "commThread";
-    //private static final String TAG = MyBackgroundThread.class.getSimpleName();
-    //private BlockingQueue<Message> SendingQueue;
-    //private Message UserMessage;
-    //private byte [] ByteMessage;
-    private CMPPort porttx;// = new CMPPort();
+
+    private CMPPortTx porttx;// = new CMPPort();
 
 
 
-    public CommThread(CMPPort cmpPort) {
+    public CommThread(CMPPortTx cmpPort) {
         super(MY_BACKGROUND_THREAD);
         porttx =cmpPort;
         //ThreadSend = new MainMenu();
