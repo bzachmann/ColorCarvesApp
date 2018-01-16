@@ -9,13 +9,13 @@ public class ReadThread extends Thread {
 
         private static final String MY_BACKGROUND_THREAD = "readThread";
 
-        private RunDisplay runTimeInformation;// = new CMPPort();
+        private CMPPortRx cmpPortRx;// = new CMPPort();
 
 
 
-        public ReadThread(RunDisplay runDisplay) {
+        public ReadThread(CMPPortRx RX) {
             super(MY_BACKGROUND_THREAD);
-            runTimeInformation =runDisplay;
+            cmpPortRx =RX;
 
 
         }
@@ -26,7 +26,7 @@ public class ReadThread extends Thread {
 
 
             while(true) {
-                runTimeInformation.run();
+                cmpPortRx.run();
             }
             //SendingQueue = ThreadPort.getCMPQueue();
         }

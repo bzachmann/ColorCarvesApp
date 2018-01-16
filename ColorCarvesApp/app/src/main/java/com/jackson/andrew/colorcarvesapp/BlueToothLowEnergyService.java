@@ -298,7 +298,8 @@ public class BlueToothLowEnergyService extends Service {
         return mBluetoothGatt.getServices();
     }
 
-    private void bytesToBuffer(byte[] data) {
+    private void bytesToBuffer(byte[] data)   //captures data from hm 10 to display on run display screen
+    {
 
         int numberOfMessages = 0;
         int temp = 1;
@@ -324,7 +325,7 @@ public class BlueToothLowEnergyService extends Service {
                 tempMessage.payload.data.setData(1,readBytes[( numberOfMessages)+ 3]);
                 tempMessage.payload.data.setData(0,readBytes[( numberOfMessages)+ 4]);
 
-                RunDisplay.getInstance().checkForValidMessage(tempMessage);
+                CMPPortRx.getInstance().checkForValidMessage(tempMessage);
                 numberOfMessages +=5;
                 temp++;
             }

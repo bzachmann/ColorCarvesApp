@@ -160,7 +160,7 @@ public class AngleSettingScreen extends AppCompatActivity {
     public void displayAngleLimit(int progress)
     {
         float AngleLimit = progress;
-        AngleLimitDisplay.setText(String.valueOf(AngleLimit / 10) + " deg");
+        AngleLimitDisplay.setText(String.valueOf(AngleLimit / 10) + " deg");  //display max angle
     }
 
     public void returnToMainMenu()

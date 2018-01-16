@@ -157,7 +157,7 @@ public class MainMenu extends AppCompatActivity{
 
 
 
-        CMPPortRx.getInstance().init();
+        CMPPortRx.getInstance();
         RunDisplay.getInstance();
         CMPPayloadHandler.getInstance().init();
         SpeedandTiltMessageHandler.getInstance().init();
@@ -528,8 +528,10 @@ if(mConnected)
         BackgroundThread = new CommThread(CMPPortTx.getInstance()); // Pass the Queue to the thread
         BackgroundThread.start();
 
-        readBackgroundThread = new ReadThread(RunDisplay.getInstance());
-        readBackgroundThread.start();
+        //readBackgroundThread = new ReadThread(CMPPortRx.getInstance());
+        //readBackgroundThread.start();
+
+
 
         //Toast.makeText(this, "starting...", Toast.LENGTH_SHORT).show();
 

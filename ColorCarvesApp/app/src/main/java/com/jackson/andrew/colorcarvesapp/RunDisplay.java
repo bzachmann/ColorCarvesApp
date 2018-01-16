@@ -12,8 +12,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class RunDisplay extends AppCompatActivity {
 
-    public TextView SpeedDisplay;
-    public TextView TiltDisplay;
+    public TextView Speed;
+    public TextView Tilt;
     public TextView Version;
     private Button ReturnToMainMenu;
     private Message messageFromCCD;
@@ -25,20 +25,26 @@ public class RunDisplay extends AppCompatActivity {
     private byte[] data;
     private static RunDisplay inst;
     private ArrayBlockingQueue<Message> messageQueueFromCCD;
+    private ReadThread readBackgroundThread;
+    private long timeOld;
+    private long sendRateMs = 200;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_run_display);
-        SpeedDisplay = (TextView) findViewById(R.id.currentSpeedDisplay);
-        TiltDisplay = (TextView) findViewById(R.id.runTimeTiltDisplay);
+         Speed = (TextView) findViewById(R.id.currentSpeedDisplay);
+         Tilt = (TextView) findViewById(R.id.runTimeTiltDisplay);
         Version = (TextView) findViewById(R.id.VersionDisplay);
-        messageQueueFromCCD = new ArrayBlockingQueue<Message>(1000);
         ReturnToMainMenu = (Button) findViewById(R.id.ReturnToMainMenu);
+        messageQueueFromCCD = new ArrayBlockingQueue<Message>(1000);
 
 
+
+        run();
 
 
 
@@ -60,6 +66,8 @@ public class RunDisplay extends AppCompatActivity {
     public void returnToMainMenu() {
         Intent myIntent = new Intent(RunDisplay.this, MainMenu.class);
         myIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+
         RunDisplay.this.startActivity(myIntent);
 
     }
@@ -82,28 +90,22 @@ public class RunDisplay extends AppCompatActivity {
     }
 
 
-    public void run()
-    {
-        while(true)
+    public void run() {
+
+        long timeNew = System.currentTimeMillis();
+        if (((timeNew - timeOld) > sendRateMs) )  //Been 200ms
         {
-            //Log.d("READ", "while true");
 
-                if(SpeedDisplay!= null) {
-
-                    Log.d("READ", "run: speed display");
-                    SpeedDisplay.setText(DisplaySpeed());
-                }
-                if(TiltDisplay!= null) {
-                    Log.d("READ", "run: tilt display");
-                    TiltDisplay.setText(DisplayTilt());
-                }
-
-
-
+            Speed.setText(CMPPortRx.getInstance().DisplaySpeed());
+            Tilt.setText(CMPPortRx.getInstance().DisplayTilt());
 
 
         }
+
     }
+
+
+
 
 
 
@@ -149,46 +151,15 @@ public class RunDisplay extends AppCompatActivity {
 
        }
 
-    public String DisplaySpeed()
+
+
+    public TextView getSpeed()
     {
-        byte[] tempByte;
-        tempByte = new byte[2];
-        tempByte[1] = SpeedData2;
-        tempByte[0] = SpeedData1;
-        String tempString;
-        tempString = tempByte.toString();
-        if(tempString!= null)
-        {
-            return tempString;
-        }
-        else {
-            tempString = "0.0";
-        }
-        Log.d("READ", "Speed Display: " + tempString);
-
-        return tempString;
-
+        return Speed;
     }
-    public String DisplayTilt()
+    public TextView getTilt()
     {
-        byte[] tempByte;
-        tempByte = new byte[2];
-        tempByte[1] = TiltData1;
-        tempByte[0] = TiltData0;
-        String tempString;
-        tempString = tempByte.toString();
-
-        if(tempString!= null)
-        {
-            return tempString;
-        }
-        else {
-            tempString = " 0.0 ";
-        }
-        Log.d("READ", "DisplayTilt: " + tempString);
-
-        return tempString;
+        return Tilt;
     }
-
 
 }
